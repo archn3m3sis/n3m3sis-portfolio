@@ -162,3 +162,69 @@ a {
     @apply font-mono;
   }
 }
+
+/* ============================================================
+   AUDIENCE SWITCHER THEMES
+
+   Each data-audience attribute overrides specific CSS variables
+   on top of shadcn's base palette. Lets each audience feel
+   distinctly different while reusing the component system.
+
+   Applied to <html data-audience="developer|tutor|reader">.
+   Works alongside the .dark class for light/dark modes.
+   ============================================================ */
+
+/* DEVELOPER — defense-tech HUD aesthetic.
+   Cool electric cyan accent, sharp, high-contrast.
+   Primary audience; sets the site's baseline feel. */
+[data-audience="developer"] {
+  --primary: oklch(0.75 0.14 220);
+  --primary-foreground: oklch(0.145 0 0);
+  --accent: oklch(0.55 0.12 215);
+  --accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.7 0.15 220);
+  --chart-1: oklch(0.75 0.14 220);
+  --chart-2: oklch(0.65 0.15 195);
+  --chart-3: oklch(0.6 0.17 240);
+  --chart-4: oklch(0.55 0.12 260);
+  --chart-5: oklch(0.5 0.1 200);
+}
+
+/* TUTOR — welcoming, approachable.
+   Warm amber accent. Dark-mode-friendly, shifted warm. */
+[data-audience="tutor"] {
+  --primary: oklch(0.82 0.16 80);
+  --primary-foreground: oklch(0.145 0 0);
+  --accent: oklch(0.55 0.12 80);
+  --accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.78 0.16 80);
+  --chart-1: oklch(0.82 0.16 80);
+  --chart-2: oklch(0.7 0.14 60);
+  --chart-3: oklch(0.65 0.13 45);
+  --chart-4: oklch(0.6 0.12 30);
+  --chart-5: oklch(0.55 0.1 15);
+}
+
+/* READER — long-form comfort.
+   Deep rust accent; sepia-tinted surfaces in dark mode. */
+[data-audience="reader"] {
+  --primary: oklch(0.72 0.13 40);
+  --primary-foreground: oklch(0.145 0 0);
+  --accent: oklch(0.5 0.1 40);
+  --accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.7 0.13 40);
+  --chart-1: oklch(0.72 0.13 40);
+  --chart-2: oklch(0.65 0.12 25);
+  --chart-3: oklch(0.58 0.1 15);
+  --chart-4: oklch(0.55 0.09 350);
+  --chart-5: oklch(0.5 0.07 335);
+}
+
+/* Reader mode in dark gets sepia-tinted surfaces for reading comfort. */
+.dark[data-audience="reader"] {
+  --background: oklch(0.17 0.015 60);
+  --card: oklch(0.22 0.015 60);
+  --popover: oklch(0.22 0.015 60);
+  --muted: oklch(0.28 0.01 60);
+  --foreground: oklch(0.92 0.01 80);
+}

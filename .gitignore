@@ -31,7 +31,10 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# even though originally genrated gitignore created by the next js application by default we 
+# will need to create a specified gitignore so that our .env.exanple file does not get ignored...
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +42,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# velite -- generated content output 
+.velite/
+
+# nix -- build outputs and direnv cache 
+result
+result-*
+.direnv/
+
+# editor/IDE directories 
+.nova
+.idea/
+.vscode/

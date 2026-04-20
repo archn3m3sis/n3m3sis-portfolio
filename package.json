@@ -42,6 +42,10 @@
     "@types/three": "^0.184.0",
     "babel-plugin-react-compiler": "1.0.0",
     "postcss": "^8.5.10",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-pretty-code": "^0.14.3",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5",
     "velite": "^0.3.1"
