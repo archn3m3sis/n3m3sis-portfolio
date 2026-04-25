@@ -15,18 +15,18 @@ export default function HomePage() {
       {/* Frosted-glass card. Holds all homepage content. */}
       <section
         className={[
-          "pointer-events-auto relative w-full max-w-2xl",
-          "rounded-2xl",
-          // Layered glass surface: a subtle white tint over a darker base,
-          // heavy backdrop blur + saturation so colors behind feel vivid.
+          "pointer-events-auto relative w-full max-w-3xl lg:max-w-4xl",
+          "rounded-3xl",
+          // Layered glass surface.
           "border border-white/10",
-          "bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]",
+          "bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))]",
           "backdrop-blur-2xl backdrop-saturate-150",
-          // Depth: outer drop shadow + inner highlight along the top edge
-          // (the inset shadow simulates the bevel of real glass).
-          "shadow-2xl shadow-black/60",
+          // Depth.
+          "shadow-2xl shadow-black/70",
           "ring-1 ring-inset ring-white/5",
-          "p-7 md:p-10",
+          // Generous interior padding so content breathes — well clear
+          // of every edge on every breakpoint.
+          "px-8 py-10 sm:px-12 sm:py-14 md:px-16 md:py-20 lg:px-20 lg:py-24",
         ].join(" ")}
       >
         {/* Subtle top-edge highlight — gives the glass a lit-edge look. */}
@@ -35,23 +35,23 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
         />
 
-        <header className="mb-8 text-center">
+        <header className="mb-10 text-center md:mb-14">
           <p className="text-xs font-medium uppercase tracking-[0.32em] text-muted-foreground">
             archn3m3sis
           </p>
-          <h1 className="mt-3 text-balance font-mono text-2xl font-semibold tracking-tight text-foreground md:text-4xl">
+          <h1 className="mt-4 text-balance font-mono text-2xl font-semibold tracking-tight text-foreground md:text-4xl lg:text-5xl">
             Who Are You and What Brings You Here?
           </h1>
         </header>
 
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {AUDIENCES.map((a) => {
             const isActive = current === a.id;
             return (
               <li key={a.id}>
                 <label
                   className={[
-                    "group flex w-full cursor-pointer items-start gap-3 rounded-md border px-4 py-3 transition-colors",
+                    "group flex w-full cursor-pointer items-start gap-4 rounded-lg border px-5 py-4 transition-colors md:px-6 md:py-5",
                     "border-white/10 bg-white/[0.03] hover:border-primary/60 hover:bg-white/[0.07]",
                     isActive ? "border-primary bg-primary/10" : "",
                   ].join(" ")}
