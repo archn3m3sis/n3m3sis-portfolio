@@ -58,18 +58,36 @@ export default function HomePage() {
           "px-16 py-16 sm:px-20 sm:py-20 md:px-28 md:py-24 lg:px-32 lg:py-28",
         ].join(" ")}
       >
-        {/* MOUSE-AWARE BORDER GLOW
-            Layered ring sitting just inside the card edge. Background is
-            a radial gradient anchored at the cursor; mask trick exposes
-            only a ~1.5px perimeter ring so the gradient appears as a
-            spotlight that travels around the border with the mouse. */}
+        {/* OUTER HALO — bleeds slightly past the card edge for that
+            hot rim-light look. Wider band, softer alpha, shorter falloff
+            so the bleed only shows near the cursor. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-1 rounded-[calc(1.5rem+4px)]"
+          style={{
+            background:
+              "radial-gradient(720px circle at var(--mx) var(--my), rgba(160,200,255,0.85), rgba(160,200,255,0) 38%)",
+            padding: "10px",
+            WebkitMask:
+              "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+            WebkitMaskComposite: "xor",
+            mask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+            maskComposite: "exclude",
+            filter: "blur(6px)",
+          }}
+        />
+
+        {/* MOUSE-AWARE BORDER RING — sharp, bright spotlight on a 4px
+            band right at the card edge. Travels with the cursor. The
+            secondary 0.20 stop keeps a faint baseline rim glowing all
+            the way around so you can always see the ring exists. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
             background:
-              "radial-gradient(420px circle at var(--mx) var(--my), rgba(160,200,255,0.55), rgba(160,200,255,0) 45%)",
-            padding: "1.5px",
+              "radial-gradient(520px circle at var(--mx) var(--my), rgba(160,200,255,1.0), rgba(160,200,255,0.2) 32%, rgba(160,200,255,0) 60%)",
+            padding: "4px",
             WebkitMask:
               "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
             WebkitMaskComposite: "xor",
@@ -78,15 +96,16 @@ export default function HomePage() {
           }}
         />
 
-        {/* SOFT INTERIOR SPOTLIGHT
-            A wide, low-opacity radial bloom that brightens the glass
-            surface near the cursor. Sits behind the content. */}
+        {/* INTERIOR SPOTLIGHT — wide, low-opacity radial bloom that
+            brightens the glass surface near the cursor. Sits behind the
+            content. Tinted toward the same blue so it reads as part of
+            the same lighting effect. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
             background:
-              "radial-gradient(540px circle at var(--mx) var(--my), rgba(255,255,255,0.06), transparent 50%)",
+              "radial-gradient(640px circle at var(--mx) var(--my), rgba(160,200,255,0.18), rgba(255,255,255,0.04) 30%, transparent 55%)",
           }}
         />
 

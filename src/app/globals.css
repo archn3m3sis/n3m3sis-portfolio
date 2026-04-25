@@ -22,11 +22,10 @@ body {
   background: transparent;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+/* NOTE: Do not add unlayered universal padding/margin resets here.
+   Tailwind v4 preflight already normalizes the box model in @layer base.
+   An unlayered `* { padding: 0; margin: 0 }` rule wins over @layer
+   utilities and silently nukes every px-* / py-* / m-* utility. */
 
 a {
   color: inherit;
