@@ -15,7 +15,7 @@ export default function HomePage() {
       {/* Frosted-glass card. Holds all homepage content. */}
       <section
         className={[
-          "pointer-events-auto relative w-full max-w-3xl lg:max-w-4xl",
+          "pointer-events-auto relative w-full max-w-3xl lg:max-w-5xl",
           "rounded-3xl",
           // Layered glass surface.
           "border border-white/10",
@@ -24,9 +24,9 @@ export default function HomePage() {
           // Depth.
           "shadow-2xl shadow-black/70",
           "ring-1 ring-inset ring-white/5",
-          // Generous interior padding so content breathes — well clear
-          // of every edge on every breakpoint.
-          "px-8 py-10 sm:px-12 sm:py-14 md:px-16 md:py-20 lg:px-20 lg:py-24",
+          // Generous interior padding — inner content visibly inset
+          // from every edge of the glass surface.
+          "px-12 py-14 sm:px-16 sm:py-20 md:px-24 md:py-24 lg:px-32 lg:py-28",
         ].join(" ")}
       >
         {/* Subtle top-edge highlight — gives the glass a lit-edge look. */}
