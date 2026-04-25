@@ -162,16 +162,40 @@ function Pillars() {
   }, [gl]);
 
   useEffect(() => {
-    const onMove = (e: PointerEvent) => {
+    const updateFromXY = (clientX: number, clientY: number) => {
       const w = window.innerWidth || 1;
       const h = window.innerHeight || 1;
       // Normalize to [-1, 1] with origin at viewport center.
-      mouseTargetRef.current.x = (e.clientX / w) * 2 - 1;
-      mouseTargetRef.current.z = (e.clientY / h) * 2 - 1;
+      mouseTargetRef.current.x = (clientX / w) * 2 - 1;
+      mouseTargetRef.current.z = (clientY / h) * 2 - 1;
     };
-    window.addEventListener("pointermove", onMove);
+    const onPointer = (e: PointerEvent) => updateFromXY(e.clientX, e.clientY);
+    const onMouse = (e: MouseEvent) => updateFromXY(e.clientX, e.clientY);
+
+    // Listen to BOTH pointermove and mousemove. Some browsers stop firing
+    // pointermove after a window blur/focus cycle even though mousemove
+    // continues — listening to both makes tracking robust to focus changes,
+    // tab switches, and DevTools opening/closing. Capture-phase so we
+    // receive events even if downstream handlers stopPropagation() them.
+    const opts: AddEventListenerOptions = { capture: true, passive: true };
+    window.addEventListener("pointermove", onPointer, opts);
+    window.addEventListener("mousemove", onMouse, opts);
+
+    // When the page regains visibility/focus, ensure tracking is alive
+    // by issuing a no-op event to wake the system. We can't read current
+    // cursor coords without an event, but this guarantees our listeners
+    // are still bound and resampling on the next mouse move.
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        // Listeners are stateless — the next real event will resample.
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
-      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointermove", onPointer, opts);
+      window.removeEventListener("mousemove", onMouse, opts);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

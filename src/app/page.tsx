@@ -58,6 +58,25 @@ export default function HomePage() {
           "px-16 py-16 sm:px-20 sm:py-20 md:px-28 md:py-24 lg:px-32 lg:py-28",
         ].join(" ")}
       >
+        {/* ALWAYS-ON BASELINE RIM — uniform soft blue band around the
+            entire perimeter, independent of cursor position. Guarantees
+            the card always has a visible glowing outline even when the
+            mouse is far from the card. Cursor-aware layers below amplify
+            this near the mouse. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-3xl"
+          style={{
+            background: "rgba(160,200,255,0.32)",
+            padding: "1.5px",
+            WebkitMask:
+              "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+            WebkitMaskComposite: "xor",
+            mask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+            maskComposite: "exclude",
+          }}
+        />
+
         {/* OUTER HALO — bleeds slightly past the card edge for that
             hot rim-light look. Wider band, softer alpha, shorter falloff
             so the bleed only shows near the cursor. */}
