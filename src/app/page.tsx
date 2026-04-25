@@ -46,14 +46,16 @@ export default function HomePage() {
           } as CSSProperties
         }
         className={[
-          "pointer-events-auto group/card relative w-full max-w-5xl",
+          "pointer-events-auto group/card relative w-full max-w-4xl",
           "rounded-3xl",
           "border border-white/10",
           "bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))]",
           "backdrop-blur-2xl backdrop-saturate-150",
           "shadow-2xl shadow-black/70",
           "ring-1 ring-inset ring-white/5",
-          "px-10 py-14 sm:px-14 sm:py-20 md:px-20 md:py-24 lg:px-24 lg:py-28",
+          // Heavy padding all around. Inner content can never touch any
+          // edge of the glass surface on any viewport.
+          "px-16 py-16 sm:px-20 sm:py-20 md:px-28 md:py-24 lg:px-32 lg:py-28",
         ].join(" ")}
       >
         {/* MOUSE-AWARE BORDER GLOW
@@ -94,14 +96,12 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
         />
 
-        {/* INNER CONTENT COLUMN — narrower than the card so guaranteed
-            breathing room flanks every inner element on every viewport. */}
-        <div className="relative mx-auto w-full max-w-2xl">
-          <header className="mb-12 text-center md:mb-16">
+        <div className="relative">
+          <header className="mb-10 text-center md:mb-14">
             <p className="text-xs font-medium uppercase tracking-[0.32em] text-muted-foreground">
               archn3m3sis
             </p>
-            <h1 className="mt-5 text-balance font-mono text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl md:text-3xl">
+            <h1 className="mt-4 text-balance font-mono text-lg font-semibold leading-tight tracking-tight text-foreground sm:text-xl md:text-2xl lg:text-3xl">
               Who Are You and What Brings You Here?
             </h1>
           </header>
