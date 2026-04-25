@@ -1,41 +1,53 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-// The three audience modes. Values match the data-audience attribute
-// and the CSS selectors in globals.css — keep them in sync.
-export type Audience = "tutor" | "developer" | "reader";
+export type Audience = "developer" | "employer" | "reader" | "student";
 
-// Labels shown in the audience switcher UI.
 export const AUDIENCES = [
-  { id: "developer", label: "Fellow Developer" },
-  { id: "tutor", label: "Tutor" },
-  { id: "reader", label: "Blog Reader" },
-] as const satisfies readonly { id: Audience; label: string }[];
+  {
+    id: "developer",
+    label: "Developer",
+    blurb: "Here to collaborate on code, projects, or open-source work.",
+  },
+  {
+    id: "employer",
+    label: "Recruiter / Employer",
+    blurb: "Here to discuss opportunities, contracts, or hiring.",
+  },
+  {
+    id: "reader",
+    label: "Reader",
+    blurb: "Here for the blog and long-form writing.",
+  },
+  {
+    id: "student",
+    label: "Student",
+    blurb: "Here to study the security & developer knowledge base.",
+  },
+] as const satisfies readonly { id: Audience; label: string; blurb: string }[];
 
-// Default audience when no preference is stored.
-export const DEFAULT_AUDIENCE: Audience = "developer";
-
-// localStorage key used by the persist middleware. The pre-hydration
-// script (next sub-step) reads from this same key to avoid the FOUC.
 export const AUDIENCE_STORAGE_KEY = "n3m3sis-audience";
 
 type AudienceState = {
-  audience: Audience;
+  audience: Audience | null;
   setAudience: (audience: Audience) => void;
+  clearAudience: () => void;
 };
 
 export const useAudienceStore = create<AudienceState>()(
   persist(
     (set) => ({
-      audience: DEFAULT_AUDIENCE,
+      audience: null,
       setAudience: (audience) => {
         set({ audience });
-        // Reflect the change on the html element so CSS updates instantly.
-        // We also do this via a React effect for the cases where the store
-        // updates outside a component, but this belt-and-suspenders catch
-        // is cheap and prevents any race window.
         if (typeof document !== "undefined") {
           document.documentElement.setAttribute("data-audience", audience);
+        }
+      },
+      clearAudience: () => {
+        set({ audience: null });
+        if (typeof document !== "undefined") {
+          document.documentElement.removeAttribute("data-audience");
         }
       },
     }),

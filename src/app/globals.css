@@ -1,10 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 html {
   height: 100%;
+  color-scheme: dark;
 }
 
 html,
@@ -19,6 +18,8 @@ body {
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Body is transparent so the fixed-position pillar field shows through. */
+  background: transparent;
 }
 
 * {
@@ -30,12 +31,6 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }
 
 @theme inline {
@@ -81,73 +76,53 @@ a {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+/* ============================================================
+   DARK-ONLY ROOT PALETTE
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+   The site is dark-only — the pillar-field WebGL background
+   sits behind every page. Cards/surfaces are translucent so
+   the field shows through; foreground stays high-contrast.
+   ============================================================ */
+:root {
+  --background: oklch(0.05 0.01 270);
+  --foreground: oklch(0.96 0.005 280);
+
+  --card: oklch(0.13 0.015 270 / 65%);
+  --card-foreground: oklch(0.96 0.005 280);
+  --popover: oklch(0.13 0.015 270 / 85%);
+  --popover-foreground: oklch(0.96 0.005 280);
+
+  --primary: oklch(0.78 0.14 280);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --secondary: oklch(0.25 0.02 270 / 60%);
+  --secondary-foreground: oklch(0.96 0.005 280);
+  --muted: oklch(0.22 0.015 270 / 55%);
+  --muted-foreground: oklch(0.72 0.01 280);
+  --accent: oklch(0.55 0.14 280 / 75%);
+  --accent-foreground: oklch(0.98 0.005 280);
+
+  --destructive: oklch(0.7 0.2 22);
+
+  --border: oklch(0.7 0.05 280 / 18%);
+  --input: oklch(0.7 0.05 280 / 22%);
+  --ring: oklch(0.78 0.14 280 / 70%);
+
+  --chart-1: oklch(0.78 0.14 280);
+  --chart-2: oklch(0.7 0.16 220);
+  --chart-3: oklch(0.62 0.16 320);
+  --chart-4: oklch(0.55 0.12 200);
+  --chart-5: oklch(0.5 0.1 260);
+
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.1 0.015 270 / 80%);
+  --sidebar-foreground: oklch(0.96 0.005 280);
+  --sidebar-primary: oklch(0.78 0.14 280);
+  --sidebar-primary-foreground: oklch(0.08 0.005 270);
+  --sidebar-accent: oklch(0.25 0.02 270 / 60%);
+  --sidebar-accent-foreground: oklch(0.96 0.005 280);
+  --sidebar-border: oklch(0.7 0.05 280 / 18%);
+  --sidebar-ring: oklch(0.78 0.14 280 / 70%);
 }
 
 @layer base {
@@ -155,7 +130,7 @@ a {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
   html {
     @apply font-mono;
@@ -163,67 +138,65 @@ a {
 }
 
 /* ============================================================
-   AUDIENCE SWITCHER THEMES
+   AUDIENCE THEMES
 
-   Each data-audience attribute overrides specific CSS variables
-   on top of shadcn's base palette. Lets each audience feel
-   distinctly different while reusing the component system.
-
-   Applied to <html data-audience="developer|tutor|reader">.
-   Works alongside the .dark class for light/dark modes.
+   Applied as <html data-audience="developer|employer|reader|student">.
+   Each overrides accent hues so the same components feel different
+   for different visitors. The base dark surface stays consistent.
    ============================================================ */
 
-/* DEVELOPER — defense-tech HUD aesthetic.
-   Cool electric cyan accent, sharp, high-contrast.
-   Primary audience; sets the site's baseline feel. */
+/* DEVELOPER — electric cyan, defense-tech HUD. */
 [data-audience="developer"] {
-  --primary: oklch(0.75 0.14 220);
-  --primary-foreground: oklch(0.145 0 0);
-  --accent: oklch(0.55 0.12 215);
-  --accent-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.7 0.15 220);
-  --chart-1: oklch(0.75 0.14 220);
-  --chart-2: oklch(0.65 0.15 195);
-  --chart-3: oklch(0.6 0.17 240);
+  --primary: oklch(0.78 0.14 220);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --accent: oklch(0.55 0.13 215 / 75%);
+  --accent-foreground: oklch(0.98 0.005 280);
+  --ring: oklch(0.78 0.14 220 / 70%);
+  --chart-1: oklch(0.78 0.14 220);
+  --chart-2: oklch(0.68 0.16 195);
+  --chart-3: oklch(0.62 0.18 240);
   --chart-4: oklch(0.55 0.12 260);
   --chart-5: oklch(0.5 0.1 200);
 }
 
-/* TUTOR — welcoming, approachable.
-   Warm amber accent. Dark-mode-friendly, shifted warm. */
-[data-audience="tutor"] {
-  --primary: oklch(0.82 0.16 80);
-  --primary-foreground: oklch(0.145 0 0);
-  --accent: oklch(0.55 0.12 80);
-  --accent-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.78 0.16 80);
-  --chart-1: oklch(0.82 0.16 80);
-  --chart-2: oklch(0.7 0.14 60);
-  --chart-3: oklch(0.65 0.13 45);
-  --chart-4: oklch(0.6 0.12 30);
-  --chart-5: oklch(0.55 0.1 15);
+/* EMPLOYER — clean neutral with confident green-cyan accent. */
+[data-audience="employer"] {
+  --primary: oklch(0.78 0.14 175);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --accent: oklch(0.55 0.12 175 / 75%);
+  --accent-foreground: oklch(0.98 0.005 280);
+  --ring: oklch(0.78 0.14 175 / 70%);
+  --chart-1: oklch(0.78 0.14 175);
+  --chart-2: oklch(0.7 0.13 195);
+  --chart-3: oklch(0.62 0.13 160);
+  --chart-4: oklch(0.55 0.1 200);
+  --chart-5: oklch(0.5 0.08 145);
 }
 
-/* READER — long-form comfort.
-   Deep rust accent; sepia-tinted surfaces in dark mode. */
+/* READER — warm amber for long-form comfort. */
 [data-audience="reader"] {
-  --primary: oklch(0.72 0.13 40);
-  --primary-foreground: oklch(0.145 0 0);
-  --accent: oklch(0.5 0.1 40);
-  --accent-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.7 0.13 40);
-  --chart-1: oklch(0.72 0.13 40);
-  --chart-2: oklch(0.65 0.12 25);
-  --chart-3: oklch(0.58 0.1 15);
-  --chart-4: oklch(0.55 0.09 350);
-  --chart-5: oklch(0.5 0.07 335);
+  --primary: oklch(0.82 0.15 75);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --accent: oklch(0.55 0.12 70 / 75%);
+  --accent-foreground: oklch(0.98 0.005 280);
+  --ring: oklch(0.8 0.15 75 / 70%);
+  --chart-1: oklch(0.82 0.15 75);
+  --chart-2: oklch(0.7 0.14 55);
+  --chart-3: oklch(0.65 0.13 40);
+  --chart-4: oklch(0.6 0.12 25);
+  --chart-5: oklch(0.55 0.1 10);
 }
 
-/* Reader mode in dark gets sepia-tinted surfaces for reading comfort. */
-.dark[data-audience="reader"] {
-  --background: oklch(0.17 0.015 60);
-  --card: oklch(0.22 0.015 60);
-  --popover: oklch(0.22 0.015 60);
-  --muted: oklch(0.28 0.01 60);
-  --foreground: oklch(0.92 0.01 80);
+/* STUDENT — magenta-violet, evokes "knowledge / wiki / study". */
+[data-audience="student"] {
+  --primary: oklch(0.78 0.16 320);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --accent: oklch(0.55 0.14 320 / 75%);
+  --accent-foreground: oklch(0.98 0.005 280);
+  --ring: oklch(0.78 0.16 320 / 70%);
+  --chart-1: oklch(0.78 0.16 320);
+  --chart-2: oklch(0.7 0.15 300);
+  --chart-3: oklch(0.62 0.14 340);
+  --chart-4: oklch(0.55 0.13 280);
+  --chart-5: oklch(0.5 0.1 360);
 }
