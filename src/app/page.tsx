@@ -106,7 +106,11 @@ export default function HomePage() {
             </h1>
           </header>
 
-          <ul className="flex flex-col gap-3">
+          {/* Tile column is explicitly narrower than the card's padded
+              interior. mx-auto centers it, so there is always visible
+              glass surface to the LEFT and RIGHT of every tile, in
+              addition to the outer card padding. */}
+          <ul className="mx-auto flex w-full max-w-md flex-col gap-3 sm:max-w-lg">
             {AUDIENCES.map((a) => {
               const isActive = current === a.id;
               return (
