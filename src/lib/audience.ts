@@ -6,31 +6,28 @@ export type Audience = "developer" | "employer" | "client" | "reader" | "student
 export const AUDIENCES = [
   {
     id: "developer",
-    label: "Developer",
-    blurb: "Here to collaborate on code, projects, or open-source work.",
+    label: "Here as a developer looking to collaborate",
   },
   {
     id: "employer",
-    label: "Recruiter / Employer",
-    blurb: "Here to discuss opportunities, contracts, or hiring.",
+    label:
+      "Here as recruiter for an employer or as an employer to discuss opportunities",
   },
   {
     id: "client",
-    label: "Client",
-    blurb:
-      "Here to engage on home or small-business services — workflow automation, AI integrations, or security baselining and testing.",
+    label:
+      "Here to request home or small-business services — workflow automation, AI integrations, or security baselining and testing",
   },
   {
     id: "reader",
-    label: "Reader",
-    blurb: "Here for the blog and long-form writing.",
+    label: "Here as a reader to view blog content",
   },
   {
     id: "student",
-    label: "Student",
-    blurb: "Here to study the security & developer knowledge base.",
+    label:
+      "Here as a student to check out your security and developer knowledge base",
   },
-] as const satisfies readonly { id: Audience; label: string; blurb: string }[];
+] as const satisfies readonly { id: Audience; label: string }[];
 
 export const AUDIENCE_STORAGE_KEY = "n3m3sis-audience";
 

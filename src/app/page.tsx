@@ -12,54 +12,55 @@ export default function HomePage() {
 
   return (
     <main className="pointer-events-none relative flex min-h-screen w-full items-center justify-center px-6 py-16">
-      <div className="w-full max-w-4xl">
-        <header className="mb-12 text-center">
+      <div className="w-full max-w-3xl">
+        <header className="mb-10 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.32em] text-muted-foreground">
             archn3m3sis
           </p>
           <h1 className="mt-4 text-balance font-mono text-3xl font-semibold tracking-tight text-foreground md:text-5xl">
-            Who are you, and what brings you here?
+            Who Are You and What Brings You Here?
           </h1>
-          <p className="mx-auto mt-4 max-w-prose text-pretty text-sm text-muted-foreground md:text-base">
-            Pick the closest fit. Your choice tunes the site&apos;s tone and
-            ordering — you can change it anytime.
-          </p>
         </header>
 
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {AUDIENCES.map((a, i) => {
+        <ul className="flex flex-col gap-2">
+          {AUDIENCES.map((a) => {
             const isActive = current === a.id;
-            const isOrphan =
-              i === AUDIENCES.length - 1 && AUDIENCES.length % 2 === 1;
             return (
-              <li key={a.id} className={isOrphan ? "md:col-span-2" : ""}>
-                <button
-                  type="button"
-                  onClick={() => onPick(a.id)}
-                  aria-pressed={isActive}
+              <li key={a.id}>
+                <label
                   className={
-                    "pointer-events-auto group relative flex w-full flex-col items-start gap-2 rounded-md border px-5 py-4 text-left backdrop-blur-md transition-colors " +
-                    "border-border bg-card/50 hover:border-primary/60 hover:bg-card/80 " +
-                    "aria-pressed:border-primary aria-pressed:bg-card/90"
+                    "pointer-events-auto group flex w-full cursor-pointer items-start gap-3 rounded-sm border px-4 py-3 backdrop-blur-md transition-colors " +
+                    "border-border bg-card/50 hover:border-primary/60 hover:bg-card/70 " +
+                    (isActive ? "border-primary bg-card/85" : "")
                   }
                 >
-                  <span className="text-xs font-medium uppercase tracking-[0.22em] text-primary">
-                    {a.label}
+                  <input
+                    type="radio"
+                    name="audience"
+                    value={a.id}
+                    checked={isActive}
+                    onChange={() => onPick(a.id)}
+                    className="sr-only"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={
+                      "mt-0.5 flex h-4 w-4 flex-none items-center justify-center border font-mono text-xs leading-none " +
+                      (isActive
+                        ? "border-primary bg-primary/20 text-primary"
+                        : "border-muted-foreground/60 text-transparent group-hover:border-primary/70")
+                    }
+                  >
+                    {isActive ? "x" : ""}
                   </span>
                   <span className="text-sm text-foreground/90 md:text-base">
-                    {a.blurb}
+                    {a.label}
                   </span>
-                </button>
+                </label>
               </li>
             );
           })}
         </ul>
-
-        {current && (
-          <p className="mt-8 text-center text-xs uppercase tracking-[0.25em] text-muted-foreground">
-            Selected: <span className="text-primary">{current}</span>
-          </p>
-        )}
       </div>
     </main>
   );
