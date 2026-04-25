@@ -138,7 +138,7 @@ function Pillars() {
         )
         .replace(
           "#include <emissivemap_fragment>",
-          `#include <emissivemap_fragment>\n  float peakGlow = smoothstep(0.35, 0.9, vWorldY / ${TWEAKS.maxHeight.toFixed(2)});\n  float tipGlow = smoothstep(0.75, 1.0, vLocalY);\n  totalEmissiveRadiance += vColor * ${(1.8 * TWEAKS.bloom).toFixed(2)} * peakGlow * tipGlow;`,
+          `#include <emissivemap_fragment>\n  float peakGlow = smoothstep(0.35, 0.9, vWorldY / ${TWEAKS.maxHeight.toFixed(2)});\n  float tipGlow = smoothstep(0.75, 1.0, vLocalY);\n  totalEmissiveRadiance += vColor.rgb * ${(1.8 * TWEAKS.bloom).toFixed(2)} * peakGlow * tipGlow;`,
         )
         .replace(
           "#include <opaque_fragment>",

@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         geistSans.variable,
         geistMono.variable,
@@ -31,7 +32,7 @@ export default function RootLayout({
       <head>
         <script src="/audience-preload.js" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <PillarField />
         {children}
       </body>

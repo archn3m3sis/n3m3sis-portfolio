@@ -11,7 +11,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="relative flex min-h-screen w-full items-center justify-center px-6 py-16">
+    <main className="pointer-events-none relative flex min-h-screen w-full items-center justify-center px-6 py-16">
       <div className="w-full max-w-4xl">
         <header className="mb-12 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.32em] text-muted-foreground">
@@ -21,22 +21,24 @@ export default function HomePage() {
             Who are you, and what brings you here?
           </h1>
           <p className="mx-auto mt-4 max-w-prose text-pretty text-sm text-muted-foreground md:text-base">
-            Pick the closest fit. Your choice tunes the site's tone and
+            Pick the closest fit. Your choice tunes the site&apos;s tone and
             ordering — you can change it anytime.
           </p>
         </header>
 
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {AUDIENCES.map((a) => {
+          {AUDIENCES.map((a, i) => {
             const isActive = current === a.id;
+            const isOrphan =
+              i === AUDIENCES.length - 1 && AUDIENCES.length % 2 === 1;
             return (
-              <li key={a.id}>
+              <li key={a.id} className={isOrphan ? "md:col-span-2" : ""}>
                 <button
                   type="button"
                   onClick={() => onPick(a.id)}
                   aria-pressed={isActive}
                   className={
-                    "group relative flex w-full flex-col items-start gap-2 rounded-md border px-5 py-4 text-left backdrop-blur-md transition-colors " +
+                    "pointer-events-auto group relative flex w-full flex-col items-start gap-2 rounded-md border px-5 py-4 text-left backdrop-blur-md transition-colors " +
                     "border-border bg-card/50 hover:border-primary/60 hover:bg-card/80 " +
                     "aria-pressed:border-primary aria-pressed:bg-card/90"
                   }

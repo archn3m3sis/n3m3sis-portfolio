@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-export type Audience = "developer" | "employer" | "reader" | "student";
+export type Audience = "developer" | "employer" | "client" | "reader" | "student";
 
 export const AUDIENCES = [
   {
@@ -13,6 +13,12 @@ export const AUDIENCES = [
     id: "employer",
     label: "Recruiter / Employer",
     blurb: "Here to discuss opportunities, contracts, or hiring.",
+  },
+  {
+    id: "client",
+    label: "Client",
+    blurb:
+      "Here to engage on home or small-business services — workflow automation, AI integrations, or security baselining and testing.",
   },
   {
     id: "reader",

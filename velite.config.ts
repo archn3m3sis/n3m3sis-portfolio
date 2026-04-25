@@ -6,7 +6,7 @@ import { defineCollection, defineConfig, s } from "velite";
 
 // Audience enum — referenced by every content collection.
 // Feeds the audience switcher's content filtering.
-const audienceEnum = s.enum(["developer", "employer", "reader", "student"]);
+const audienceEnum = s.enum(["developer", "employer", "client", "reader", "student"]);
 
 // Fields shared across all content collections.
 const baseFields = {
