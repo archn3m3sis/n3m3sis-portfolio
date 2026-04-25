@@ -12,6 +12,10 @@ const TWEAKS = {
   bloom: 2,
   fieldBound: 60,
   maxPillars: 60000,
+  // How far the field pans at the cursor's edge of the viewport.
+  panStrength: 8,
+  // Per-frame lerp factor (0..1). Higher = snappier follow, lower = lazier.
+  panLerp: 0.06,
 };
 
 const grad3: ReadonlyArray<readonly [number, number, number]> = [
@@ -89,7 +93,10 @@ function palette(t: number): THREE.Color {
 
 function Pillars() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const dragRef = useRef({ isDragging: false, dragX: 0, dragY: 0, velX: 0, velY: 0 });
+  // Mouse-driven pan: cursor's normalized position [-1, 1] in viewport.
+  // The actual offsets lerp toward target * panStrength each frame so the
+  // motion feels organic instead of snapping with the cursor.
+  const mouseTargetRef = useRef({ x: 0, z: 0 });
   const offsetRef = useRef({ x: 0, y: 0, z: 0 });
   const simplex01 = useMemo(() => makeSimplex(), []);
   const { gl } = useThree();
@@ -155,39 +162,18 @@ function Pillars() {
   }, [gl]);
 
   useEffect(() => {
-    const canvas = gl.domElement;
-    const onDown = (e: PointerEvent) => {
-      const d = dragRef.current;
-      d.isDragging = true;
-      d.velX = 0;
-      d.velY = 0;
-      d.dragX = e.clientX;
-      d.dragY = e.clientY;
-    };
     const onMove = (e: PointerEvent) => {
-      const d = dragRef.current;
-      if (!d.isDragging) return;
-      const dx = e.clientX - d.dragX;
-      const dy = e.clientY - d.dragY;
-      d.dragX = e.clientX;
-      d.dragY = e.clientY;
-      d.velX = dx * 0.01;
-      d.velY = dy * 0.01;
-      offsetRef.current.x -= d.velX;
-      offsetRef.current.z -= d.velY;
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      // Normalize to [-1, 1] with origin at viewport center.
+      mouseTargetRef.current.x = (e.clientX / w) * 2 - 1;
+      mouseTargetRef.current.z = (e.clientY / h) * 2 - 1;
     };
-    const onUp = () => {
-      dragRef.current.isDragging = false;
-    };
-    canvas.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
     return () => {
-      canvas.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
     };
-  }, [gl]);
+  }, []);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -195,18 +181,15 @@ function Pillars() {
     const mesh = meshRef.current;
     if (!mesh) return;
     offsetRef.current.y += dt * TWEAKS.timeSpeed;
-    const d = dragRef.current;
-    if (!d.isDragging && (d.velX !== 0 || d.velY !== 0)) {
-      const decay = Math.pow(0.04, dt);
-      d.velX *= decay;
-      d.velY *= decay;
-      offsetRef.current.x -= d.velX;
-      offsetRef.current.z -= d.velY;
-      if (Math.abs(d.velX) < 1e-4 && Math.abs(d.velY) < 1e-4) {
-        d.velX = 0;
-        d.velY = 0;
-      }
-    }
+
+    // Mouse-driven pan: lerp offsets toward (target * panStrength) so motion
+    // is smooth, not jittery. Larger lerpRate = more responsive; smaller =
+    // more dampened. dt-aware so the feel is frame-rate independent.
+    const targetX = mouseTargetRef.current.x * TWEAKS.panStrength;
+    const targetZ = mouseTargetRef.current.z * TWEAKS.panStrength;
+    const lerpAlpha = 1 - Math.pow(1 - TWEAKS.panLerp, dt * 60);
+    offsetRef.current.x += (targetX - offsetRef.current.x) * lerpAlpha;
+    offsetRef.current.z += (targetZ - offsetRef.current.z) * lerpAlpha;
 
     const ns = TWEAKS.noiseScale;
     const offX = offsetRef.current.x;
