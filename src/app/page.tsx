@@ -44,8 +44,9 @@ import { LockShieldIcon } from "@/components/icons/lock-shield";
 import { MagnifierIcon } from "@/components/icons/magnifier";
 import { OpenBookIcon } from "@/components/icons/open-book";
 import { PageFlagIcon } from "@/components/icons/page-flag";
-import { QuadFanIcon } from "@/components/icons/quad-fan";
 import { PhotoStackIcon } from "@/components/icons/photo-stack";
+import { PowerPointIcon } from "@/components/icons/powerpoint";
+import { QuadFanIcon } from "@/components/icons/quad-fan";
 import { ScreenTextIcon } from "@/components/icons/screen-text";
 import { ServerStackIcon } from "@/components/icons/server-stack";
 import { ShieldIcon } from "@/components/icons/shield";
@@ -119,6 +120,7 @@ const SLOTS: ReactNode[] = [
   <LeafShapeIcon key="leaf-shape" className="h-3/5 w-3/5" />,
   <CompassPointerIcon key="compass-pointer" className="h-3/5 w-3/5" />,
   <UrgentMailIcon key="urgent-mail" className="h-3/5 w-3/5" />,
+  <PowerPointIcon key="powerpoint" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
