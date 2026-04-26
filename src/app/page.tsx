@@ -3,6 +3,7 @@ import { GlassCard } from "@/components/glass-card";
 import { ArrowStackIcon } from "@/components/icons/arrow-stack";
 import { BarChartIcon } from "@/components/icons/bar-chart";
 import { BoxPuzzleIcon } from "@/components/icons/box-puzzle";
+import { BulldozerIcon } from "@/components/icons/bulldozer";
 import { CalendarGridIcon } from "@/components/icons/calendar-grid";
 import { CalendarPinkIcon } from "@/components/icons/calendar-pink";
 import { ChatBubbleIcon } from "@/components/icons/chat-bubble";
@@ -125,6 +126,7 @@ const SLOTS: ReactNode[] = [
   <PowerPointIcon key="powerpoint" className="h-3/5 w-3/5" />,
   <WatchFaceIcon key="watch-face" className="h-3/5 w-3/5" />,
   <DumbbellIcon key="dumbbell" className="h-3/5 w-3/5" />,
+  <BulldozerIcon key="bulldozer" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
