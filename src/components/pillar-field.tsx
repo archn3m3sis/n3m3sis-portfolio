@@ -613,9 +613,12 @@ function Scene() {
         <meshStandardMaterial color={0x040508} roughness={0.85} metalness={0.15} />
       </mesh>
       <Pillars />
-      {/* First content-zone platform. Future audience-specific zones
-          can be additional <Platform position={[x, 0, z]} /> calls. */}
-      <Platform position={[0, 0, 0]} />
+      {/* First content-zone platform. Sat far-right and forward so it
+          clears the homepage 10x10 grid and reads as the focal object
+          of the scene rather than fighting DOM content for attention.
+          Future audience-specific zones can be additional
+          <Platform position={[x, 0, z]} /> calls. */}
+      <Platform position={[16, 0, 10]} />
     </>
   );
 }
