@@ -51,9 +51,9 @@ import { ServerStackIcon } from "@/components/icons/server-stack";
 import { ShieldIcon } from "@/components/icons/shield";
 import { SparkleBulbIcon } from "@/components/icons/sparkle-bulb";
 import { SparkleStarIcon } from "@/components/icons/sparkle-star";
-import { StarPointsIcon } from "@/components/icons/star-points";
 import { SunMagnifierIcon } from "@/components/icons/sun-magnifier";
 import { TargetTentIcon } from "@/components/icons/target-tent";
+import { UrgentMailIcon } from "@/components/icons/urgent-mail";
 import { WalletIcon } from "@/components/icons/wallet";
 import { WandBurstIcon } from "@/components/icons/wand-burst";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
@@ -99,7 +99,6 @@ const SLOTS: ReactNode[] = [
   <ScreenTextIcon key="screen-text" className="h-3/5 w-3/5" />,
   <CalendarGridIcon key="calendar-grid" className="h-3/5 w-3/5" />,
   <DocumentSearchIcon key="document-search" className="h-3/5 w-3/5" />,
-  <StarPointsIcon key="star-points" className="h-3/5 w-3/5" />,
   <DoubleArrowIcon key="double-arrow" className="h-3/5 w-3/5" />,
   <SparkleStarIcon key="sparkle-star" className="h-3/5 w-3/5" />,
   <CloudArrowIcon key="cloud-arrow" className="h-3/5 w-3/5" />,
@@ -119,6 +118,7 @@ const SLOTS: ReactNode[] = [
   <KeyboardDotsIcon key="keyboard-dots" className="h-3/5 w-3/5" />,
   <LeafShapeIcon key="leaf-shape" className="h-3/5 w-3/5" />,
   <CompassPointerIcon key="compass-pointer" className="h-3/5 w-3/5" />,
+  <UrgentMailIcon key="urgent-mail" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
