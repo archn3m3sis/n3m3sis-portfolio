@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { GlassCard } from "@/components/glass-card";
 import { ArrowStackIcon } from "@/components/icons/arrow-stack";
 import { BarChartIcon } from "@/components/icons/bar-chart";
+import { BiohazardIcon } from "@/components/icons/biohazard";
 import { BoxPuzzleIcon } from "@/components/icons/box-puzzle";
 import { BulldozerIcon } from "@/components/icons/bulldozer";
 import { CalendarGridIcon } from "@/components/icons/calendar-grid";
@@ -28,6 +29,7 @@ import { FlagPinIcon } from "@/components/icons/flag-pin";
 import { FolderFlameIcon } from "@/components/icons/folder-flame";
 import { GreenJournalIcon } from "@/components/icons/green-journal";
 import { HeadphonesIcon } from "@/components/icons/headphones";
+import { HeadsetIcon } from "@/components/icons/headset";
 import { HeartPinIcon } from "@/components/icons/heart-pin";
 import { JournalGlowIcon } from "@/components/icons/journal-glow";
 import { KeyGearIcon } from "@/components/icons/key-gear";
@@ -127,6 +129,8 @@ const SLOTS: ReactNode[] = [
   <WatchFaceIcon key="watch-face" className="h-3/5 w-3/5" />,
   <DumbbellIcon key="dumbbell" className="h-3/5 w-3/5" />,
   <BulldozerIcon key="bulldozer" className="h-3/5 w-3/5" />,
+  <HeadsetIcon key="headset" className="h-3/5 w-3/5" />,
+  <BiohazardIcon key="biohazard" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
