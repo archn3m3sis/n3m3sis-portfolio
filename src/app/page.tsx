@@ -4,7 +4,10 @@ import { ArrowStackIcon } from "@/components/icons/arrow-stack";
 import { BarChartIcon } from "@/components/icons/bar-chart";
 import { BoxPuzzleIcon } from "@/components/icons/box-puzzle";
 import { CalendarGridIcon } from "@/components/icons/calendar-grid";
+import { CalendarPinkIcon } from "@/components/icons/calendar-pink";
 import { ChatBubbleIcon } from "@/components/icons/chat-bubble";
+import { ClockToggleIcon } from "@/components/icons/clock-toggle";
+import { CloudArrowIcon } from "@/components/icons/cloud-arrow";
 import { ClownIcon } from "@/components/icons/clown";
 import { CodeMonitorIcon } from "@/components/icons/code-monitor";
 import { CometIcon } from "@/components/icons/comet";
@@ -12,8 +15,10 @@ import { CubeFlameIcon } from "@/components/icons/cube-flame";
 import { CursorClipIcon } from "@/components/icons/cursor-clip";
 import { DanceFlameIcon } from "@/components/icons/dance-flame";
 import { DatabaseIcon } from "@/components/icons/database";
+import { DiagonalBannerIcon } from "@/components/icons/diagonal-banner";
 import { DocumentSearchIcon } from "@/components/icons/document-search";
 import { DoubleArrowIcon } from "@/components/icons/double-arrow";
+import { DownloadCardIcon } from "@/components/icons/download-card";
 import { EnvelopeHomeIcon } from "@/components/icons/envelope-home";
 import { FigureFlagIcon } from "@/components/icons/figure-flag";
 import { FlagPinIcon } from "@/components/icons/flag-pin";
@@ -31,14 +36,18 @@ import { LockShieldIcon } from "@/components/icons/lock-shield";
 import { MagnifierIcon } from "@/components/icons/magnifier";
 import { OpenBookIcon } from "@/components/icons/open-book";
 import { PageFlagIcon } from "@/components/icons/page-flag";
+import { PhotoStackIcon } from "@/components/icons/photo-stack";
 import { ScreenTextIcon } from "@/components/icons/screen-text";
 import { ServerStackIcon } from "@/components/icons/server-stack";
 import { ShieldIcon } from "@/components/icons/shield";
+import { SparkleBulbIcon } from "@/components/icons/sparkle-bulb";
+import { SparkleStarIcon } from "@/components/icons/sparkle-star";
 import { StarPointsIcon } from "@/components/icons/star-points";
 import { SunMagnifierIcon } from "@/components/icons/sun-magnifier";
 import { TargetTentIcon } from "@/components/icons/target-tent";
 import { TeardropIcon } from "@/components/icons/teardrop";
 import { WalletIcon } from "@/components/icons/wallet";
+import { WandBurstIcon } from "@/components/icons/wand-burst";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
 import { WrenchIcon } from "@/components/icons/wrench";
 
@@ -85,6 +94,15 @@ const SLOTS: ReactNode[] = [
   <TeardropIcon key="teardrop" className="h-3/5 w-3/5" />,
   <StarPointsIcon key="star-points" className="h-3/5 w-3/5" />,
   <DoubleArrowIcon key="double-arrow" className="h-3/5 w-3/5" />,
+  <SparkleStarIcon key="sparkle-star" className="h-3/5 w-3/5" />,
+  <CloudArrowIcon key="cloud-arrow" className="h-3/5 w-3/5" />,
+  <WandBurstIcon key="wand-burst" className="h-3/5 w-3/5" />,
+  <DownloadCardIcon key="download-card" className="h-3/5 w-3/5" />,
+  <DiagonalBannerIcon key="diagonal-banner" className="h-3/5 w-3/5" />,
+  <CalendarPinkIcon key="calendar-pink" className="h-3/5 w-3/5" />,
+  <PhotoStackIcon key="photo-stack" className="h-3/5 w-3/5" />,
+  <SparkleBulbIcon key="sparkle-bulb" className="h-3/5 w-3/5" />,
+  <ClockToggleIcon key="clock-toggle" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
