@@ -6,6 +6,7 @@ import { NorthPointerIcon } from "@/components/icons/north-pointer";
 import { SouthPointerIcon } from "@/components/icons/south-pointer";
 import { WestPointerIcon } from "@/components/icons/west-pointer";
 import { PillarField } from "@/components/pillar-field";
+import { TopBar } from "@/components/top-bar";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -39,13 +40,15 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <PillarField />
+        <TopBar />
         {children}
         {/* Compass pointers — site-wide directional markers, blended with the
             background. They sit at the four cardinal edges and use mix-blend
-            so they read as ambient rather than UI. */}
+            so they read as ambient rather than UI. North is offset below the
+            top bar so the bar can sit at the absolute top edge. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pt-2 opacity-50 mix-blend-screen"
+          className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pt-20 opacity-50 mix-blend-screen"
         >
           <NorthPointerIcon size={44} />
         </div>
