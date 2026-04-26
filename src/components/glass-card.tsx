@@ -113,7 +113,7 @@ export function GlassCard({ children, className, coord }: Props) {
       {coord && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-1.5 top-1 z-20 font-mono text-[8px] leading-none tracking-wide text-white/30 sm:left-2 sm:top-1.5 sm:text-[10px]"
+          className="pointer-events-none absolute inset-x-0 top-1 z-20 text-center font-mono text-[8px] leading-none tracking-wide text-white/30 sm:top-1.5 sm:text-[10px]"
         >
           {coord}
         </span>
