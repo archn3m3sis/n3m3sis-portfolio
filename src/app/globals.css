@@ -83,45 +83,49 @@ a {
    the field shows through; foreground stays high-contrast.
    ============================================================ */
 :root {
-  --background: oklch(0.05 0.01 270);
-  --foreground: oklch(0.96 0.005 280);
+  /* Dark, near-monochrome base. Chroma values are intentionally tiny
+     (0.005 - 0.02) so the surfaces read as severe, neutral grey-blue
+     rather than chromatic. Audience themes layered on top can still
+     introduce hue when the visitor self-selects. */
+  --background: oklch(0.04 0.005 270);
+  --foreground: oklch(0.94 0.005 270);
 
-  --card: oklch(0.13 0.015 270 / 65%);
-  --card-foreground: oklch(0.96 0.005 280);
-  --popover: oklch(0.13 0.015 270 / 85%);
-  --popover-foreground: oklch(0.96 0.005 280);
+  --card: oklch(0.12 0.008 270 / 65%);
+  --card-foreground: oklch(0.94 0.005 270);
+  --popover: oklch(0.12 0.008 270 / 85%);
+  --popover-foreground: oklch(0.94 0.005 270);
 
-  --primary: oklch(0.78 0.14 280);
+  --primary: oklch(0.82 0.01 270);
   --primary-foreground: oklch(0.08 0.005 270);
-  --secondary: oklch(0.25 0.02 270 / 60%);
-  --secondary-foreground: oklch(0.96 0.005 280);
-  --muted: oklch(0.22 0.015 270 / 55%);
-  --muted-foreground: oklch(0.72 0.01 280);
-  --accent: oklch(0.55 0.14 280 / 75%);
-  --accent-foreground: oklch(0.98 0.005 280);
+  --secondary: oklch(0.22 0.01 270 / 60%);
+  --secondary-foreground: oklch(0.94 0.005 270);
+  --muted: oklch(0.20 0.008 270 / 55%);
+  --muted-foreground: oklch(0.65 0.005 270);
+  --accent: oklch(0.50 0.02 270 / 75%);
+  --accent-foreground: oklch(0.96 0.005 270);
 
-  --destructive: oklch(0.7 0.2 22);
+  --destructive: oklch(0.65 0.15 22);
 
-  --border: oklch(0.7 0.05 280 / 18%);
-  --input: oklch(0.7 0.05 280 / 22%);
-  --ring: oklch(0.78 0.14 280 / 70%);
+  --border: oklch(0.65 0.01 270 / 18%);
+  --input: oklch(0.65 0.01 270 / 22%);
+  --ring: oklch(0.82 0.01 270 / 70%);
 
-  --chart-1: oklch(0.78 0.14 280);
-  --chart-2: oklch(0.7 0.16 220);
-  --chart-3: oklch(0.62 0.16 320);
-  --chart-4: oklch(0.55 0.12 200);
-  --chart-5: oklch(0.5 0.1 260);
+  --chart-1: oklch(0.78 0.01 270);
+  --chart-2: oklch(0.66 0.02 250);
+  --chart-3: oklch(0.55 0.02 290);
+  --chart-4: oklch(0.45 0.01 230);
+  --chart-5: oklch(0.38 0.01 260);
 
   --radius: 0.625rem;
 
-  --sidebar: oklch(0.1 0.015 270 / 80%);
-  --sidebar-foreground: oklch(0.96 0.005 280);
-  --sidebar-primary: oklch(0.78 0.14 280);
+  --sidebar: oklch(0.09 0.008 270 / 80%);
+  --sidebar-foreground: oklch(0.94 0.005 270);
+  --sidebar-primary: oklch(0.82 0.01 270);
   --sidebar-primary-foreground: oklch(0.08 0.005 270);
-  --sidebar-accent: oklch(0.25 0.02 270 / 60%);
-  --sidebar-accent-foreground: oklch(0.96 0.005 280);
-  --sidebar-border: oklch(0.7 0.05 280 / 18%);
-  --sidebar-ring: oklch(0.78 0.14 280 / 70%);
+  --sidebar-accent: oklch(0.22 0.01 270 / 60%);
+  --sidebar-accent-foreground: oklch(0.94 0.005 270);
+  --sidebar-border: oklch(0.65 0.01 270 / 18%);
+  --sidebar-ring: oklch(0.82 0.01 270 / 70%);
 }
 
 @layer base {

@@ -83,12 +83,13 @@ function makeSimplex() {
 }
 
 const tmpCol = new THREE.Color();
+// Near-monochrome palette. Luminance varies with the noise field; hue
+// holds at a faint cool tint so the scene reads as severe / muted
+// rather than the previous cyan-magenta cosine-palette wash.
 function palette(t: number): THREE.Color {
-  const tau = Math.PI * 2;
-  const r = 0.45 + 0.55 * Math.cos(tau * (1.0 * t + 0.55));
-  const g = 0.25 + 0.35 * Math.cos(tau * (1.0 * t + 0.25));
-  const b = 0.65 + 0.35 * Math.cos(tau * (1.0 * t + 0.0));
-  return tmpCol.setRGB(Math.max(0, r), Math.max(0, g), Math.max(0, b));
+  const v = 0.18 + 0.55 * t; // 0.18 -> 0.73
+  // 5% extra blue, 3% less red — barely-perceptible cool cast.
+  return tmpCol.setRGB(v * 0.97, v, v * 1.05);
 }
 
 function Pillars() {
@@ -250,14 +251,17 @@ function Pillars() {
 function Scene() {
   return (
     <>
-      <fog attach="fog" args={[0x03040a, 18, 80]} />
-      <color attach="background" args={[0x03040a]} />
-      <ambientLight color={0x030614} intensity={0.6} />
-      <directionalLight color={0x4060c0} intensity={1.4} position={[30, 30, 42]} />
-      <directionalLight color={0xc01060} intensity={1.0} position={[-10, 8, -12]} />
+      <fog attach="fog" args={[0x05060a, 18, 80]} />
+      <color attach="background" args={[0x05060a]} />
+      {/* Lights desaturated to cool greys. The previous blue/magenta
+          two-light setup gave the scene a vivid colored wash; now both
+          lights are near-neutral so the pillars read as monochrome. */}
+      <ambientLight color={0x0a0c10} intensity={0.55} />
+      <directionalLight color={0x9aa3b0} intensity={1.25} position={[30, 30, 42]} />
+      <directionalLight color={0x4a5060} intensity={0.7} position={[-10, 8, -12]} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.005, 0]}>
         <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color={0x020308} roughness={0.85} metalness={0.15} />
+        <meshStandardMaterial color={0x040508} roughness={0.85} metalness={0.15} />
       </mesh>
       <Pillars />
     </>

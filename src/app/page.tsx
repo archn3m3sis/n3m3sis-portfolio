@@ -67,7 +67,7 @@ export default function HomePage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
-            background: "rgba(160,200,255,0.32)",
+            background: "rgba(210,215,225,0.32)",
             padding: "1.5px",
             WebkitMask:
               "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
@@ -85,7 +85,7 @@ export default function HomePage() {
           className="pointer-events-none absolute -inset-1 rounded-[calc(1.5rem+4px)]"
           style={{
             background:
-              "radial-gradient(720px circle at var(--mx) var(--my), rgba(160,200,255,0.85), rgba(160,200,255,0) 38%)",
+              "radial-gradient(720px circle at var(--mx) var(--my), rgba(210,215,225,0.85), rgba(210,215,225,0) 38%)",
             padding: "10px",
             WebkitMask:
               "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
@@ -105,7 +105,7 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
             background:
-              "radial-gradient(520px circle at var(--mx) var(--my), rgba(160,200,255,1.0), rgba(160,200,255,0.2) 32%, rgba(160,200,255,0) 60%)",
+              "radial-gradient(520px circle at var(--mx) var(--my), rgba(210,215,225,1.0), rgba(210,215,225,0.2) 32%, rgba(210,215,225,0) 60%)",
             padding: "4px",
             WebkitMask:
               "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
@@ -124,7 +124,7 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
             background:
-              "radial-gradient(640px circle at var(--mx) var(--my), rgba(160,200,255,0.18), rgba(255,255,255,0.04) 30%, transparent 55%)",
+              "radial-gradient(640px circle at var(--mx) var(--my), rgba(210,215,225,0.18), rgba(255,255,255,0.04) 30%, transparent 55%)",
           }}
         />
 
