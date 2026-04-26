@@ -6,6 +6,12 @@ import { useRef } from "react";
 type Props = {
   children?: ReactNode;
   className?: string;
+  /**
+   * Optional coordinate label rendered faintly in the top-left of the
+   * card (e.g. "R4C9"). Used during development so cells can be
+   * referenced by row/column without ambiguity.
+   */
+  coord?: string;
 };
 
 /**
@@ -16,7 +22,7 @@ type Props = {
  * No content layout assumptions; whatever you pass as children renders
  * centered (flex items-center justify-center on the section itself).
  */
-export function GlassCard({ children, className }: Props) {
+export function GlassCard({ children, className, coord }: Props) {
   const cardRef = useRef<HTMLElement>(null);
 
   const onMouseMove = (e: ReactMouseEvent<HTMLElement>) => {
@@ -103,6 +109,15 @@ export function GlassCard({ children, className }: Props) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
       />
+
+      {coord && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1.5 top-1 z-20 font-mono text-[8px] leading-none tracking-wide text-white/30 sm:left-2 sm:top-1.5 sm:text-[10px]"
+        >
+          {coord}
+        </span>
+      )}
 
       <div className="relative z-10 flex w-full items-center justify-center">
         {children}

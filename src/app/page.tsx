@@ -125,15 +125,20 @@ export default function HomePage() {
   return (
     <main className="pointer-events-none relative flex min-h-screen w-full items-center justify-center px-4 py-8 md:px-8 md:py-12">
       <div className="grid w-full max-w-5xl grid-cols-10 gap-1.5 sm:gap-2">
-        {Array.from({ length: 100 }, (_, i) => (
-          <GlassCard
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length 10x10 grid; index is stable
-            key={i}
-            className="aspect-square"
-          >
-            {SLOTS[i] ?? null}
-          </GlassCard>
-        ))}
+        {Array.from({ length: 100 }, (_, i) => {
+          const row = Math.floor(i / 10) + 1;
+          const col = (i % 10) + 1;
+          return (
+            <GlassCard
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length 10x10 grid; index is stable
+              key={i}
+              className="aspect-square"
+              coord={`R${row}C${col}`}
+            >
+              {SLOTS[i] ?? null}
+            </GlassCard>
+          );
+        })}
       </div>
     </main>
   );
