@@ -32,7 +32,6 @@ import { FigureFlagIcon } from "@/components/icons/figure-flag";
 import { FlagPinIcon } from "@/components/icons/flag-pin";
 import { FlowChartIcon } from "@/components/icons/flow-chart";
 import { FolderFlameIcon } from "@/components/icons/folder-flame";
-import { GoalIcon } from "@/components/icons/goal";
 import { GreenJournalIcon } from "@/components/icons/green-journal";
 import { HandshakeIcon } from "@/components/icons/handshake";
 import { HeadphonesIcon } from "@/components/icons/headphones";
@@ -82,7 +81,9 @@ import { WideMonitorIcon } from "@/components/icons/wide-monitor";
 import { WindroseIcon } from "@/components/icons/windrose";
 import { WrenchIcon } from "@/components/icons/wrench";
 
-// 10x10 = 100 slots. Cells without an entry render as empty glass tiles.
+// Each entry becomes one glass card. The grid uses 10 columns so
+// floor(index/10)+1 / (index%10)+1 still gives a stable R/C coord.
+// Only filled cells render — empty tiles were dropped.
 const SLOTS: ReactNode[] = [
   <OpenBookIcon key="open-book" className="h-3/5 w-3/5" />,
   <GreenJournalIcon key="green-journal" className="h-3/5 w-3/5" />,
@@ -162,7 +163,6 @@ const SLOTS: ReactNode[] = [
   <BlogIcon key="blog" className="h-3/5 w-3/5" />,
   <ShopIcon key="shop" className="h-3/5 w-3/5" />,
   <FlowChartIcon key="flow-chart" className="h-3/5 w-3/5" />,
-  <GoalIcon key="goal" className="h-3/5 w-3/5" />,
   <MapIcon key="map" className="h-3/5 w-3/5" />,
   <NavigationIcon key="navigation" className="h-3/5 w-3/5" />,
 ];
@@ -171,17 +171,17 @@ export default function HomePage() {
   return (
     <main className="pointer-events-none relative flex min-h-screen w-full items-center justify-center px-4 py-8 md:px-8 md:py-12">
       <div className="grid w-full max-w-5xl grid-cols-10 gap-1.5 sm:gap-2">
-        {Array.from({ length: 100 }, (_, i) => {
+        {SLOTS.map((slot, i) => {
           const row = Math.floor(i / 10) + 1;
           const col = (i % 10) + 1;
           return (
             <GlassCard
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length 10x10 grid; index is stable
+              // biome-ignore lint/suspicious/noArrayIndexKey: index maps to fixed grid position
               key={i}
               className="aspect-square"
               coord={`R${row}C${col}`}
             >
-              {SLOTS[i] ?? null}
+              {slot}
             </GlassCard>
           );
         })}

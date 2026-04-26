@@ -1,5 +1,6 @@
 "use client";
 
+import { MeshTransmissionMaterial } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -281,78 +282,127 @@ function Pillars() {
 // ------------------------------------------------------------------
 // Platform — a glassmorphic disk that floats on the wave like a boat.
 //
-// Physics:
-//   - Vertical position is driven by a critically-damped spring whose
-//     target is the wave height beneath the platform plus a small
-//     hover offset and a subtle ambient bob (so even on a flat sea
-//     the platform breathes).
-//   - Pitch (rotation X) and roll (rotation Z) come from the gradient
-//     of the wave at the platform's footprint — sampling the wave at
-//     four cardinal offsets and using the central differences. This
-//     is what makes it feel like a boat heeling into a swell rather
-//     than a rigid object riding a piston.
-//   - A slow yaw oscillation gives it the lazy "boat at anchor" sway.
+// Physics (two-stage target):
+//   1. NATURAL FLOAT — average the wave height across 19 points in
+//      the disk's elliptical footprint and add a hover offset + a
+//      tiny ambient bob. This is what the disk would sit at on a
+//      calm sea: lazy boat behavior.
+//   2. NO-PIERCE FLOOR — also track the MAX pillar height in the
+//      footprint. The disk's bottom must clear that max by a fixed
+//      clearance, otherwise a tall pillar would skewer the deck.
+//   targetY = max(naturalFloat, maxPillar + clearance + thickness/2)
+//   So when a swell rolls under the disk, the disk RIDES the swell
+//   (lifted by the floor constraint) instead of being pierced. The
+//   spring follows the higher target, so the rise is smooth.
 //
-// Visuals:
-//   - Oval cylinder slice (scaled X != Z) in physically-based glass-
-//     ish material. No transmission (too expensive); we fake glass
-//     with low roughness + clearcoat + soft emissive.
-//   - Bright cyan emissive ring on the top edge (rim light).
-//   - Softer blue underglow ring on the bottom (water reflection).
-//   - 4 floating tokens orbit on an elliptical path matching the
-//     platform's footprint, each with its own bob phase and self-spin.
+//   Tilt comes from the wave gradient at the cardinals — but we
+//   damp it as the disk rises above its natural float, because once
+//   it's been lifted off the swell it shouldn't heel anymore.
+//
+// Visuals (true glass):
+//   - drei MeshTransmissionMaterial with chromatic aberration and
+//     subtle distortion. Color is white; theme tint comes from
+//     attenuationColor (light passing through the body picks up the
+//     tint based on optical depth — physically correct glass).
+//   - Theme-tinted emissive rim (top) and softer underglow (bottom).
+//   - 4 orbiting tokens whose colors are also theme-derived.
 // ------------------------------------------------------------------
 
-type FloatingTokenSpec = {
-  shape: "octahedron" | "icosahedron" | "box" | "torus";
-  color: string;
-  scale: number;
+type PlatformTheme = {
+  rim: string;
+  underglow: string;
+  attenuation: string;
+  tokens: [string, string, string, string];
 };
 
-const PLATFORM_TOKENS: FloatingTokenSpec[] = [
-  { shape: "octahedron", color: "#86e4ff", scale: 0.42 },
-  { shape: "icosahedron", color: "#c99fff", scale: 0.46 },
-  { shape: "box", color: "#5bdd46", scale: 0.5 },
-  { shape: "torus", color: "#ff8df0", scale: 0.4 },
-];
+const THEMES = {
+  developer: {
+    rim: "#86e4ff",
+    underglow: "#3a8fbf",
+    attenuation: "#a0d8ff",
+    tokens: ["#86e4ff", "#5cbdf7", "#aef0ff", "#7fd4ff"],
+  },
+  employer: {
+    rim: "#78e837",
+    underglow: "#00bc73",
+    attenuation: "#bfe6a0",
+    tokens: ["#78e837", "#5bdd46", "#aef0a0", "#00bc73"],
+  },
+  client: {
+    rim: "#c99fff",
+    underglow: "#7c4dff",
+    attenuation: "#cdb6ff",
+    tokens: ["#daa6ff", "#962aff", "#c99fff", "#9c7bff"],
+  },
+  student: {
+    rim: "#ff8df0",
+    underglow: "#cc5de8",
+    attenuation: "#e8b6e0",
+    tokens: ["#ff8df0", "#cc5de8", "#ffa4f9", "#e0a0e8"],
+  },
+} as const satisfies Record<string, PlatformTheme>;
+
+// Sample points within a unit ellipse — center, outer ring (12),
+// staggered inner ring (6). Dense enough that no pillar can sneak
+// between samples on a 5-unit-radius platform.
+const FOOTPRINT_SAMPLES: ReadonlyArray<readonly [number, number]> = (() => {
+  const s: [number, number][] = [[0, 0]];
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    s.push([Math.cos(a), Math.sin(a)]);
+  }
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+    s.push([Math.cos(a) * 0.4, Math.sin(a) * 0.4]);
+  }
+  return s;
+})();
+
+const TOKEN_SHAPES = ["octahedron", "icosahedron", "box", "torus"] as const;
+type TokenShape = (typeof TOKEN_SHAPES)[number];
 
 function FloatingToken({
-  spec,
+  shape,
+  color,
+  scale,
   orbitX,
   orbitZ,
   phase,
   hoverBoost,
 }: {
-  spec: FloatingTokenSpec;
+  shape: TokenShape;
+  color: string;
+  scale: number;
   orbitX: number;
   orbitZ: number;
   phase: number;
   hoverBoost: { current: number };
 }) {
   const ref = useRef<THREE.Mesh>(null);
+  const matRef = useRef<THREE.MeshStandardMaterial>(null);
 
   useFrame((state) => {
     const m = ref.current;
     if (!m) return;
     const t = state.clock.elapsedTime;
-    // Local vertical bob — independent of orbit. Adds organic motion.
-    m.position.y = Math.sin(t * 0.9 + phase) * 0.18;
-    // Self-spin: each axis rotates at a slightly different rate so the
-    // token never settles into a regular flicker.
+    m.position.y = Math.sin(t * 0.9 + phase) * 0.2;
     m.rotation.x = t * 0.55 + phase;
     m.rotation.y = t * 0.32 + phase * 1.7;
+    if (matRef.current) {
+      matRef.current.emissiveIntensity = 1.6 + hoverBoost.current * 1.4;
+    }
   });
 
   const geometry = (() => {
-    switch (spec.shape) {
+    switch (shape) {
       case "octahedron":
-        return <octahedronGeometry args={[spec.scale, 0]} />;
+        return <octahedronGeometry args={[scale, 0]} />;
       case "icosahedron":
-        return <icosahedronGeometry args={[spec.scale, 1]} />;
+        return <icosahedronGeometry args={[scale, 1]} />;
       case "box":
-        return <boxGeometry args={[spec.scale, spec.scale, spec.scale]} />;
+        return <boxGeometry args={[scale * 1.1, scale * 1.1, scale * 1.1]} />;
       case "torus":
-        return <torusGeometry args={[spec.scale * 0.85, spec.scale * 0.28, 14, 28]} />;
+        return <torusGeometry args={[scale * 0.85, scale * 0.28, 16, 32]} />;
     }
   })();
 
@@ -360,11 +410,12 @@ function FloatingToken({
     <mesh ref={ref} position={[orbitX, 0, orbitZ]}>
       {geometry}
       <meshStandardMaterial
-        color={spec.color}
-        emissive={spec.color}
-        emissiveIntensity={1.5 + hoverBoost.current * 1.2}
-        roughness={0.28}
-        metalness={0.45}
+        ref={matRef}
+        color={color}
+        emissive={color}
+        emissiveIntensity={1.6}
+        roughness={0.25}
+        metalness={0.5}
         toneMapped={true}
       />
     </mesh>
@@ -372,33 +423,45 @@ function FloatingToken({
 }
 
 function Platform({
-  position = [0, 0, 0] as [number, number, number],
+  position,
+  theme,
   radiusX = 5.5,
   radiusZ = 4.2,
-  thickness = 0.45,
-  hoverOffset = 1.4,
+  thickness = 1.0,
+  hoverOffset = 1.6,
+  clearance = 0.85,
 }: {
-  position?: [number, number, number];
+  position: [number, number, number];
+  theme: PlatformTheme;
   radiusX?: number;
   radiusZ?: number;
   thickness?: number;
   hoverOffset?: number;
+  clearance?: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const orbitRef = useRef<THREE.Group>(null);
+  const rimMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const underglowMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const velY = useRef(0);
   const hoverBoost = useRef(0);
   const [hovered, setHovered] = useState(false);
 
-  // Initialize y so the first frame doesn't snap from 0 to ~1.4.
-  // Sample once and seed the position. The wave is non-zero so this
-  // avoids a one-frame dive.
+  // Seed Y so the first frame doesn't dive from 0.
   useEffect(() => {
     if (!groupRef.current) return;
-    const seed =
-      sampleWaveHeight(position[0], position[2]) + hoverOffset;
-    groupRef.current.position.y = seed;
-  }, [position, hoverOffset]);
+    let max = 0;
+    let sum = 0;
+    for (const [u, v] of FOOTPRINT_SAMPLES) {
+      const h = sampleWaveHeight(position[0] + u * radiusX, position[2] + v * radiusZ);
+      sum += h;
+      if (h > max) max = h;
+    }
+    const avg = sum / FOOTPRINT_SAMPLES.length;
+    const natural = avg + hoverOffset;
+    const floor = max + thickness * 0.5 + clearance;
+    groupRef.current.position.y = Math.max(natural, floor);
+  }, [position, hoverOffset, radiusX, radiusZ, thickness, clearance]);
 
   useFrame((state, dt) => {
     const g = groupRef.current;
@@ -406,85 +469,94 @@ function Platform({
     const t = state.clock.elapsedTime;
     const [px, , pz] = position;
 
-    // Footprint sampling distance — close to the platform's outer edge
-    // so the gradient reflects the actual wave the deck would feel.
+    // ---- Footprint sampling: avg + max in one pass ----
+    let sum = 0;
+    let max = 0;
+    for (const [u, v] of FOOTPRINT_SAMPLES) {
+      const sx = px + u * radiusX;
+      const sz = pz + v * radiusZ;
+      const h = sampleWaveHeight(sx, sz);
+      sum += h;
+      if (h > max) max = h;
+    }
+    const hAvg = sum / FOOTPRINT_SAMPLES.length;
+
+    // ---- Tilt sampling: cardinals at footprint edge ----
     const sampleDist = Math.max(radiusX, radiusZ) * 0.65;
-    const hC = sampleWaveHeight(px, pz);
     const hN = sampleWaveHeight(px, pz - sampleDist);
     const hS = sampleWaveHeight(px, pz + sampleDist);
     const hE = sampleWaveHeight(px + sampleDist, pz);
     const hW = sampleWaveHeight(px - sampleDist, pz);
 
-    // Average the center and the four cardinals so a single tall pillar
-    // doesn't yank the entire platform up by itself — a real boat
-    // averages buoyancy across its hull.
-    const hAvg = (hC * 2 + hN + hS + hE + hW) * 0.16667;
-
-    // Gentle ambient bob layered on top of the wave-driven target.
-    // Two sinusoids at incommensurate frequencies prevent visible
-    // periodicity.
+    // Per-platform phase offset so a fleet of disks doesn't bob in
+    // lockstep — derived from world position so it's deterministic.
     const ambientBob =
-      Math.sin(t * 0.7) * 0.09 + Math.sin(t * 0.43 + 1.3) * 0.06;
-    const targetY = hAvg + hoverOffset + ambientBob;
+      Math.sin(t * 0.7 + position[0] * 0.13) * 0.09 +
+      Math.sin(t * 0.43 + 1.3 + position[2] * 0.11) * 0.06;
 
-    // Critically-damped spring toward target. The values below were
-    // tuned by feel: stiffness 4.8 / damping 2.0 gives a boat-like
-    // settle — overshoots a touch, then steadies — rather than the
-    // robotic step you get from straight lerp().
-    const stiffness = 4.8;
-    const damping = 2.0;
+    const naturalTarget = hAvg + hoverOffset + ambientBob;
+
+    // Tilt-aware floor: a tilted disk's leeward edge sits LOWER than
+    // its center by ~radiusMax * sin(maxTilt). Account for that so
+    // the rolled edge doesn't dip into a pillar tip even though the
+    // center is well above. We use the CURRENT tilt as the estimate
+    // (one-frame lag is fine — the floor still recomputes next frame).
+    const radiusMax = Math.max(radiusX, radiusZ);
+    const maxTilt = Math.max(Math.abs(g.rotation.x), Math.abs(g.rotation.z));
+    const tiltDrop = radiusMax * Math.sin(maxTilt);
+    // Hard floor: disk's BOTTOM (including the lowest tilted edge)
+    // must clear the tallest pillar in the footprint by `clearance`.
+    const minDiskY = max + thickness * 0.5 + clearance + tiltDrop;
+    const targetY = Math.max(naturalTarget, minDiskY);
+
+    // ---- Vertical spring (slightly under-critically damped) ----
+    // Higher stiffness so the spring catches fast-rising swells.
+    const stiffness = 9.0;
+    const damping = 4.2;
     const dy = targetY - g.position.y;
     velY.current += (stiffness * dy - damping * velY.current) * dt;
     g.position.y += velY.current * dt;
 
-    // Pitch / roll from the wave gradient at the footprint.
-    // pitchTarget: positive when south is higher than north (nose up).
-    // rollTarget:  positive when west is higher than east  (port up).
-    const tiltGain = 0.55;
-    const pitchTarget = ((hS - hN) / (2 * sampleDist)) * tiltGain;
-    const rollTarget = ((hW - hE) / (2 * sampleDist)) * tiltGain;
+    // HARD CLAMP — non-negotiable. Even with the spring tracking the
+    // floor, fast wave rises can briefly outpace the integrator. After
+    // the spring update, if we're below the floor we're shoved up to
+    // it and downward velocity is zeroed. This is the guarantee that
+    // a pillar can NEVER pierce the disk surface.
+    if (g.position.y < minDiskY) {
+      g.position.y = minDiskY;
+      if (velY.current < 0) velY.current = 0;
+    }
 
-    // Add ambient sway so the boat never sits perfectly still.
-    const swayPitch = Math.sin(t * 0.31) * 0.025;
-    const swayRoll = Math.cos(t * 0.27 + 0.7) * 0.03;
+    // ---- Tilt ----
+    // When the disk has been lifted off the natural float (a pillar is
+    // pushing it up), reduce tilt — it shouldn't heel into a swell it's
+    // no longer touching.
+    const lift = Math.max(0, g.position.y - naturalTarget);
+    const tiltDamp = Math.exp(-lift * 0.6);
+    const tiltGain = 0.5;
+    const pitchTarget = ((hS - hN) / (2 * sampleDist)) * tiltGain * tiltDamp;
+    const rollTarget = ((hW - hE) / (2 * sampleDist)) * tiltGain * tiltDamp;
 
-    // Frame-rate-independent damp toward the tilt targets.
+    const swayPitch = Math.sin(t * 0.31 + position[0] * 0.07) * 0.025;
+    const swayRoll = Math.cos(t * 0.27 + 0.7 + position[2] * 0.09) * 0.03;
     const tiltDecay = 1 - Math.exp(-dt * 3.2);
     g.rotation.x += (pitchTarget + swayPitch - g.rotation.x) * tiltDecay;
     g.rotation.z += (rollTarget + swayRoll - g.rotation.z) * tiltDecay;
-    // Slow yaw drift — anchor sway.
-    g.rotation.y = Math.sin(t * 0.18) * 0.07;
+    g.rotation.y = Math.sin(t * 0.18 + position[0] * 0.05) * 0.07;
 
-    // Orbit the tokens. They sit in a child group whose y-rotation
-    // accumulates linearly so the orbit is constant-velocity, plus a
-    // gentle boost when the platform is hovered.
+    // ---- Orbit + hover ----
     if (orbitRef.current) {
-      const orbitSpeed = 0.22 + hoverBoost.current * 0.25;
+      const orbitSpeed = 0.22 + hoverBoost.current * 0.3;
       orbitRef.current.rotation.y += dt * orbitSpeed;
     }
-
-    // Smooth toward the hover state. Damped so cursor jitter doesn't
-    // strobe the rim brightness.
     const target = hovered ? 1 : 0;
     hoverBoost.current += (target - hoverBoost.current) * (1 - Math.exp(-dt * 6));
-  });
 
-  // Materials change when hovered — emissive intensity jumps. We
-  // can't read hoverBoost.current at render time without forcing a
-  // re-render, so instead use a uniform-style ref applied via
-  // material.emissiveIntensity inside useFrame. Done for the rim
-  // ring below via a ref handle.
-  const rimRef = useRef<THREE.Mesh>(null);
-  const underglowRef = useRef<THREE.Mesh>(null);
-
-  useFrame(() => {
-    if (rimRef.current) {
-      const m = rimRef.current.material as THREE.MeshBasicMaterial;
-      m.opacity = 0.7 + hoverBoost.current * 0.3;
+    if (rimMatRef.current) {
+      rimMatRef.current.opacity = 0.75 + hoverBoost.current * 0.25;
     }
-    if (underglowRef.current) {
-      const m = underglowRef.current.material as THREE.MeshBasicMaterial;
-      m.opacity = 0.35 + hoverBoost.current * 0.25;
+    if (underglowMatRef.current) {
+      underglowMatRef.current.opacity = 0.4 + hoverBoost.current * 0.3;
     }
   });
 
@@ -498,101 +570,287 @@ function Platform({
       }}
       onPointerOut={() => setHovered(false)}
     >
-      {/* Glass disk body. Slight inverted-cone taper (top radius
-          larger than bottom) so the rim catches the lights and reads
-          as a chunky puck rather than a flat coin. */}
+      {/* Real refractive glass disk. The body is white; the theme
+          color enters via attenuationColor — light traversing the
+          glass picks up tint based on optical depth, which is how
+          colored glass actually works. Slight inverted-cone taper
+          and high clearcoat gives the rim a wet, lensed edge. */}
       <mesh scale={[radiusX, thickness, radiusZ]}>
-        <cylinderGeometry args={[1, 0.94, 1, 96, 1]} />
-        <meshPhysicalMaterial
-          color="#0c1626"
-          roughness={0.12}
-          metalness={0.35}
-          clearcoat={1}
-          clearcoatRoughness={0.04}
-          transparent
-          opacity={0.72}
-          emissive="#0a2236"
-          emissiveIntensity={0.5}
+        <cylinderGeometry args={[1, 0.93, 1, 128, 1]} />
+        <MeshTransmissionMaterial
+          samples={6}
+          resolution={256}
+          transmission={1}
+          roughness={0.06}
+          thickness={1.4}
+          ior={1.45}
+          chromaticAberration={0.06}
+          anisotropy={0.2}
+          distortion={0.15}
+          distortionScale={0.35}
+          temporalDistortion={0.04}
+          attenuationColor={theme.attenuation}
+          attenuationDistance={2.2}
+          color="#ffffff"
+          toneMapped
         />
       </mesh>
 
-      {/* Top emissive rim — sharp cyan, sits a hair above the disk
-          surface to avoid z-fighting. */}
+      {/* Top emissive rim — theme-tinted ring. */}
       <mesh
-        ref={rimRef}
         position={[0, thickness * 0.5 + 0.002, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[radiusX, radiusZ, 1]}
       >
         <ringGeometry args={[0.94, 1.0, 128]} />
         <meshBasicMaterial
-          color="#86e4ff"
+          ref={rimMatRef}
+          color={theme.rim}
           transparent
-          opacity={0.7}
+          opacity={0.75}
           toneMapped={false}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* Bottom underglow — wider, softer, blue. Reads as light
-          bouncing off the wave back onto the deck's underside. */}
+      {/* Underglow — softer, wider, theme tint. */}
       <mesh
-        ref={underglowRef}
         position={[0, -thickness * 0.5 - 0.002, 0]}
         rotation={[Math.PI / 2, 0, 0]}
-        scale={[radiusX * 1.05, radiusZ * 1.05, 1]}
+        scale={[radiusX * 1.08, radiusZ * 1.08, 1]}
       >
-        <ringGeometry args={[0.86, 1.0, 96]} />
+        <ringGeometry args={[0.84, 1.0, 96]} />
         <meshBasicMaterial
-          color="#3a8fbf"
+          ref={underglowMatRef}
+          color={theme.underglow}
           transparent
-          opacity={0.35}
+          opacity={0.4}
           toneMapped={false}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* Soft inner top-cap glow — a faint wash on the deck so it
-          doesn't look like a black hole when the rim lights it. */}
-      <mesh
-        position={[0, thickness * 0.5 + 0.003, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[radiusX * 0.88, radiusZ * 0.88, 1]}
-      >
-        <circleGeometry args={[1, 80]} />
-        <meshBasicMaterial
-          color="#13283c"
-          transparent
-          opacity={0.22}
-          toneMapped={false}
-        />
-      </mesh>
+      {/* D-pad joystick — the eventual position/movement indicator.
+          Sits in the center, levitating above the deck. */}
+      <group position={[0, thickness * 0.5 + 0.6, 0]}>
+        <DPad theme={theme} hoverBoost={hoverBoost} />
+      </group>
 
-      {/* Floating tokens — orbiting just above the deck. They live
-          in a child group whose y-rotation animates the orbit; each
-          token also has its own local bob + self-spin. */}
-      <group ref={orbitRef} position={[0, thickness * 0.5 + 1.2, 0]}>
-        {PLATFORM_TOKENS.map((spec, i) => {
-          const angle = (i / PLATFORM_TOKENS.length) * Math.PI * 2;
-          const orbitR = Math.min(radiusX, radiusZ) * 0.62;
-          // Elliptical orbit matches the platform's oval shape.
-          const ox = Math.cos(angle) * radiusX * 0.6;
-          const oz = Math.sin(angle) * radiusZ * 0.6;
-          // Suppress unused warning — we calculated orbitR but the
-          // ellipse uses radiusX/radiusZ directly.
-          void orbitR;
+      {/* Floating tokens — orbit at a wider radius around the D-pad. */}
+      <group ref={orbitRef} position={[0, thickness * 0.5 + 1.5, 0]}>
+        {TOKEN_SHAPES.map((shape, i) => {
+          const angle = (i / TOKEN_SHAPES.length) * Math.PI * 2;
+          const ox = Math.cos(angle) * radiusX * 0.7;
+          const oz = Math.sin(angle) * radiusZ * 0.7;
           return (
             <FloatingToken
-              key={spec.shape}
-              spec={spec}
+              key={shape}
+              shape={shape}
+              color={theme.tokens[i] as string}
+              scale={0.42}
               orbitX={ox}
               orbitZ={oz}
-              phase={i * 1.2}
+              phase={i * 1.25}
               hoverBoost={hoverBoost}
             />
           );
         })}
       </group>
+    </group>
+  );
+}
+
+// Multi-path journey: 4 destination stones placed on ALTERNATING
+// sides of the screen, receding into the distance. Right (close,
+// developer) → Left (mid, employer) → Right (far, client) → Left
+// (very far, student). Future camera-movement system will glide
+// the user from one to the next as they move forward / backward;
+// the alternation makes that traversal feel like winding through
+// a path rather than charging straight ahead. Fog hazes the far
+// stones for natural depth.
+const PLATFORM_PATH: ReadonlyArray<{
+  position: [number, number, number];
+  theme: PlatformTheme;
+}> = [
+  { position: [16, 0, 4], theme: THEMES.developer },
+  { position: [-15, 0, -10], theme: THEMES.employer },
+  { position: [16, 0, -24], theme: THEMES.client },
+  { position: [-16, 0, -38], theme: THEMES.student },
+];
+
+// ------------------------------------------------------------------
+// DPad — 4-triangle directional pad with a glass-ball joystick at
+// its center. Floats above each platform's deck.
+//
+// This will eventually act as the user's POSITION/MOVEMENT INDICATOR:
+// the joystick ball will tilt in the direction of mouse-drift /
+// keyboard input, and the camera will accelerate accordingly,
+// gliding the viewer between alternating-side platforms. For now
+// it's a static-but-floating glass object on each platform —
+// the input wiring comes in a follow-up.
+// ------------------------------------------------------------------
+
+function DPad({
+  theme,
+  hoverBoost,
+}: {
+  theme: PlatformTheme;
+  hoverBoost: { current: number };
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const ballRef = useRef<THREE.Mesh>(null);
+  const stickRef = useRef<THREE.Mesh>(null);
+
+  // Build the triangle geometry once. Shape is in XY (tip up Y);
+  // we lay it flat so the tip points in +Z by rotating the
+  // geometry on the X axis. Each instance is then positioned
+  // around a center and rotated around Y to face its direction.
+  const triGeometry = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0.55);
+    s.lineTo(-0.36, -0.05);
+    s.lineTo(0.36, -0.05);
+    s.closePath();
+    const g = new THREE.ExtrudeGeometry(s, {
+      depth: 0.14,
+      bevelEnabled: true,
+      bevelThickness: 0.04,
+      bevelSize: 0.035,
+      bevelSegments: 3,
+      curveSegments: 4,
+    });
+    // Center the extrusion vertically so tilt rotates around the
+    // triangle's middle, not its base.
+    g.translate(0, 0, -0.07);
+    g.rotateX(-Math.PI / 2); // lay flat in XZ plane, tip in +Z
+    return g;
+  }, []);
+
+  useFrame((state) => {
+    const g = groupRef.current;
+    if (!g) return;
+    const t = state.clock.elapsedTime;
+    // Slow float up/down so the assembly clearly levitates above
+    // the platform deck.
+    g.position.y = Math.sin(t * 0.6) * 0.15;
+    // Lazy yaw rotation; speeds up slightly on hover.
+    g.rotation.y += (0.18 + hoverBoost.current * 0.4) * 0.016;
+
+    // Joystick ball gentle bob and self-rotation.
+    if (ballRef.current) {
+      ballRef.current.position.y = 0.78 + Math.sin(t * 1.1) * 0.04;
+      ballRef.current.rotation.y = t * 0.4;
+      ballRef.current.rotation.x = Math.sin(t * 0.5) * 0.1;
+    }
+    // Stick subtly tilts (placeholder for input-driven tilt later).
+    if (stickRef.current) {
+      stickRef.current.rotation.x = Math.sin(t * 0.45) * 0.04;
+      stickRef.current.rotation.z = Math.cos(t * 0.37) * 0.04;
+    }
+  });
+
+  // Direction layout: N/S/E/W around center.
+  const r = 0.78;
+  const directions: Array<{ x: number; z: number; ry: number }> = [
+    { x: 0, z: r, ry: 0 },              // N (tip in +Z)
+    { x: 0, z: -r, ry: Math.PI },       // S
+    { x: r, z: 0, ry: -Math.PI / 2 },   // E (tip in +X)
+    { x: -r, z: 0, ry: Math.PI / 2 },   // W
+  ];
+
+  return (
+    <group ref={groupRef}>
+      {/* Four directional triangles — frosted glass, theme-tinted. */}
+      {directions.map((d, i) => (
+        <mesh
+          key={i}
+          geometry={triGeometry}
+          position={[d.x, 0, d.z]}
+          rotation={[0, d.ry, 0]}
+          castShadow={false}
+        >
+          <meshPhysicalMaterial
+            color="#ffffff"
+            transmission={0.85}
+            thickness={0.4}
+            ior={1.45}
+            roughness={0.08}
+            metalness={0.05}
+            clearcoat={1}
+            clearcoatRoughness={0.05}
+            attenuationColor={theme.attenuation}
+            attenuationDistance={1.4}
+            transparent
+            opacity={0.95}
+          />
+        </mesh>
+      ))}
+
+      {/* Joystick base ring — a small glassy plinth the stick rises from. */}
+      <mesh position={[0, 0.06, 0]}>
+        <cylinderGeometry args={[0.32, 0.36, 0.12, 32]} />
+        <meshPhysicalMaterial
+          color="#ffffff"
+          transmission={0.7}
+          thickness={0.4}
+          ior={1.45}
+          roughness={0.1}
+          metalness={0.1}
+          clearcoat={1}
+          attenuationColor={theme.attenuation}
+          attenuationDistance={1.2}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+
+      {/* Joystick shaft — slim metallic-glass rod. */}
+      <mesh ref={stickRef} position={[0, 0.42, 0]}>
+        <cylinderGeometry args={[0.06, 0.08, 0.6, 24]} />
+        <meshPhysicalMaterial
+          color={theme.rim}
+          transmission={0.6}
+          thickness={0.3}
+          ior={1.5}
+          roughness={0.12}
+          metalness={0.7}
+          clearcoat={1}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+
+      {/* Joystick ball — the centerpiece glass sphere. */}
+      <mesh ref={ballRef} position={[0, 0.78, 0]}>
+        <sphereGeometry args={[0.22, 48, 48]} />
+        <meshPhysicalMaterial
+          color="#ffffff"
+          transmission={0.95}
+          thickness={0.45}
+          ior={1.5}
+          roughness={0.04}
+          metalness={0}
+          clearcoat={1}
+          clearcoatRoughness={0.02}
+          attenuationColor={theme.attenuation}
+          attenuationDistance={0.8}
+          transparent
+          opacity={0.95}
+        />
+      </mesh>
+
+      {/* Soft halo behind the ball — emissive disc that subtly glows
+          out from behind the joystick. */}
+      <mesh position={[0, 0.78, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.28, 0.42, 48]} />
+        <meshBasicMaterial
+          color={theme.rim}
+          transparent
+          opacity={0.18 + hoverBoost.current * 0.3}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
     </group>
   );
 }
@@ -613,12 +871,12 @@ function Scene() {
         <meshStandardMaterial color={0x040508} roughness={0.85} metalness={0.15} />
       </mesh>
       <Pillars />
-      {/* First content-zone platform. Sat far-right and forward so it
-          clears the homepage 10x10 grid and reads as the focal object
-          of the scene rather than fighting DOM content for attention.
-          Future audience-specific zones can be additional
-          <Platform position={[x, 0, z]} /> calls. */}
-      <Platform position={[16, 0, 10]} />
+      {/* Multi-path journey: 4 destination platforms stepping back
+          into the scene from front-right (developer) to back-left
+          (student). Fog hazes the far ones for natural depth. */}
+      {PLATFORM_PATH.map((stop, i) => (
+        <Platform key={i} position={stop.position} theme={stop.theme} />
+      ))}
     </>
   );
 }
