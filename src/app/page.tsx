@@ -57,6 +57,7 @@ import { TargetTentIcon } from "@/components/icons/target-tent";
 import { UrgentMailIcon } from "@/components/icons/urgent-mail";
 import { WalletIcon } from "@/components/icons/wallet";
 import { WandBurstIcon } from "@/components/icons/wand-burst";
+import { WatchFaceIcon } from "@/components/icons/watch-face";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
 import { WrenchIcon } from "@/components/icons/wrench";
 
@@ -121,6 +122,7 @@ const SLOTS: ReactNode[] = [
   <CompassPointerIcon key="compass-pointer" className="h-3/5 w-3/5" />,
   <UrgentMailIcon key="urgent-mail" className="h-3/5 w-3/5" />,
   <PowerPointIcon key="powerpoint" className="h-3/5 w-3/5" />,
+  <WatchFaceIcon key="watch-face" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
