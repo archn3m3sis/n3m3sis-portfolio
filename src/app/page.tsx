@@ -11,6 +11,7 @@ import { CloudArrowIcon } from "@/components/icons/cloud-arrow";
 import { ClownIcon } from "@/components/icons/clown";
 import { CodeMonitorIcon } from "@/components/icons/code-monitor";
 import { CometIcon } from "@/components/icons/comet";
+import { CompassPointerIcon } from "@/components/icons/compass-pointer";
 import { CubeFlameIcon } from "@/components/icons/cube-flame";
 import { CursorClipIcon } from "@/components/icons/cursor-clip";
 import { DanceFlameIcon } from "@/components/icons/dance-flame";
@@ -28,14 +29,22 @@ import { HeadphonesIcon } from "@/components/icons/headphones";
 import { HeartPinIcon } from "@/components/icons/heart-pin";
 import { JournalGlowIcon } from "@/components/icons/journal-glow";
 import { KeyGearIcon } from "@/components/icons/key-gear";
+import { KeyboardDotsIcon } from "@/components/icons/keyboard-dots";
 import { KioskPinIcon } from "@/components/icons/kiosk-pin";
 import { LayoutWindowIcon } from "@/components/icons/layout-window";
+import { LeafShapeIcon } from "@/components/icons/leaf-shape";
+import { LetterDIcon } from "@/components/icons/letter-d";
+import { LetterNIcon } from "@/components/icons/letter-n";
+import { LetterTIcon } from "@/components/icons/letter-t";
+import { LetterWIcon } from "@/components/icons/letter-w";
+import { LetterXIcon } from "@/components/icons/letter-x";
 import { LifebuoyIcon } from "@/components/icons/lifebuoy";
 import { LightbulbIcon } from "@/components/icons/lightbulb";
 import { LockShieldIcon } from "@/components/icons/lock-shield";
 import { MagnifierIcon } from "@/components/icons/magnifier";
 import { OpenBookIcon } from "@/components/icons/open-book";
 import { PageFlagIcon } from "@/components/icons/page-flag";
+import { QuadFanIcon } from "@/components/icons/quad-fan";
 import { PhotoStackIcon } from "@/components/icons/photo-stack";
 import { ScreenTextIcon } from "@/components/icons/screen-text";
 import { ServerStackIcon } from "@/components/icons/server-stack";
@@ -46,6 +55,7 @@ import { StarPointsIcon } from "@/components/icons/star-points";
 import { SunMagnifierIcon } from "@/components/icons/sun-magnifier";
 import { TargetTentIcon } from "@/components/icons/target-tent";
 import { TeardropIcon } from "@/components/icons/teardrop";
+import { TypewriterIcon } from "@/components/icons/typewriter";
 import { WalletIcon } from "@/components/icons/wallet";
 import { WandBurstIcon } from "@/components/icons/wand-burst";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
@@ -103,6 +113,16 @@ const SLOTS: ReactNode[] = [
   <PhotoStackIcon key="photo-stack" className="h-3/5 w-3/5" />,
   <SparkleBulbIcon key="sparkle-bulb" className="h-3/5 w-3/5" />,
   <ClockToggleIcon key="clock-toggle" className="h-3/5 w-3/5" />,
+  <QuadFanIcon key="quad-fan" className="h-3/5 w-3/5" />,
+  <LetterTIcon key="letter-t" className="h-3/5 w-3/5" />,
+  <LetterNIcon key="letter-n" className="h-3/5 w-3/5" />,
+  <LetterWIcon key="letter-w" className="h-3/5 w-3/5" />,
+  <LetterDIcon key="letter-d" className="h-3/5 w-3/5" />,
+  <LetterXIcon key="letter-x" className="h-3/5 w-3/5" />,
+  <KeyboardDotsIcon key="keyboard-dots" className="h-3/5 w-3/5" />,
+  <LeafShapeIcon key="leaf-shape" className="h-3/5 w-3/5" />,
+  <TypewriterIcon key="typewriter" className="h-3/5 w-3/5" />,
+  <CompassPointerIcon key="compass-pointer" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
