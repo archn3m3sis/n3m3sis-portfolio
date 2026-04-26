@@ -12,6 +12,18 @@ body {
   overflow-x: hidden;
 }
 
+/* Custom magnifier-target cursor takes over from the system cursor.
+   The Cursor component renders a fixed-position overlay with
+   neon crosshairs that grow to encapsulate clickable elements. */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  html *,
+  html *::before,
+  html *::after {
+    cursor: none !important;
+  }
+}
+
 body {
   min-height: 100%;
   display: flex;

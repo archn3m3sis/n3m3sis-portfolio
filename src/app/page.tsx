@@ -3,11 +3,14 @@ import { GlassCard } from "@/components/glass-card";
 import { ArrowStackIcon } from "@/components/icons/arrow-stack";
 import { BarChartIcon } from "@/components/icons/bar-chart";
 import { BiohazardIcon } from "@/components/icons/biohazard";
+import { BlogIcon } from "@/components/icons/blog";
 import { BoxPuzzleIcon } from "@/components/icons/box-puzzle";
 import { BulldozerIcon } from "@/components/icons/bulldozer";
 import { CalendarGridIcon } from "@/components/icons/calendar-grid";
 import { CalendarPinkIcon } from "@/components/icons/calendar-pink";
+import { ChangeArrowIcon } from "@/components/icons/change-arrow";
 import { ChatBubbleIcon } from "@/components/icons/chat-bubble";
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 import { ClockToggleIcon } from "@/components/icons/clock-toggle";
 import { CloudArrowIcon } from "@/components/icons/cloud-arrow";
 import { ClownIcon } from "@/components/icons/clown";
@@ -18,16 +21,21 @@ import { CubeFlameIcon } from "@/components/icons/cube-flame";
 import { CursorClipIcon } from "@/components/icons/cursor-clip";
 import { DanceFlameIcon } from "@/components/icons/dance-flame";
 import { DatabaseIcon } from "@/components/icons/database";
+import { DatabaseStackIcon } from "@/components/icons/database-stack";
 import { DiagonalBannerIcon } from "@/components/icons/diagonal-banner";
 import { DocumentSearchIcon } from "@/components/icons/document-search";
+import { DonutChartIcon } from "@/components/icons/donut-chart";
 import { DoubleArrowIcon } from "@/components/icons/double-arrow";
 import { DownloadCardIcon } from "@/components/icons/download-card";
 import { DumbbellIcon } from "@/components/icons/dumbbell";
 import { EnvelopeHomeIcon } from "@/components/icons/envelope-home";
 import { FigureFlagIcon } from "@/components/icons/figure-flag";
 import { FlagPinIcon } from "@/components/icons/flag-pin";
+import { FlowChartIcon } from "@/components/icons/flow-chart";
 import { FolderFlameIcon } from "@/components/icons/folder-flame";
+import { GoalIcon } from "@/components/icons/goal";
 import { GreenJournalIcon } from "@/components/icons/green-journal";
+import { HandshakeIcon } from "@/components/icons/handshake";
 import { HeadphonesIcon } from "@/components/icons/headphones";
 import { HeadsetIcon } from "@/components/icons/headset";
 import { HeartPinIcon } from "@/components/icons/heart-pin";
@@ -35,6 +43,7 @@ import { JournalGlowIcon } from "@/components/icons/journal-glow";
 import { KeyGearIcon } from "@/components/icons/key-gear";
 import { KeyboardDotsIcon } from "@/components/icons/keyboard-dots";
 import { KioskPinIcon } from "@/components/icons/kiosk-pin";
+import { LayersIcon } from "@/components/icons/layers";
 import { LayoutWindowIcon } from "@/components/icons/layout-window";
 import { LeafShapeIcon } from "@/components/icons/leaf-shape";
 import { LetterDIcon } from "@/components/icons/letter-d";
@@ -43,19 +52,27 @@ import { LetterTIcon } from "@/components/icons/letter-t";
 import { LetterWIcon } from "@/components/icons/letter-w";
 import { LetterXIcon } from "@/components/icons/letter-x";
 import { LifebuoyIcon } from "@/components/icons/lifebuoy";
+import { LighthouseIcon } from "@/components/icons/lighthouse";
 import { LightbulbIcon } from "@/components/icons/lightbulb";
 import { LockShieldIcon } from "@/components/icons/lock-shield";
 import { MagnifierIcon } from "@/components/icons/magnifier";
+import { MapIcon } from "@/components/icons/map";
+import { MountainIcon } from "@/components/icons/mountain";
+import { NavigationIcon } from "@/components/icons/navigation";
 import { OpenBookIcon } from "@/components/icons/open-book";
+import { PadlockIcon } from "@/components/icons/padlock";
 import { PageFlagIcon } from "@/components/icons/page-flag";
+import { PathIcon } from "@/components/icons/path";
 import { PhotoStackIcon } from "@/components/icons/photo-stack";
 import { PowerPointIcon } from "@/components/icons/powerpoint";
 import { QuadFanIcon } from "@/components/icons/quad-fan";
 import { ScreenTextIcon } from "@/components/icons/screen-text";
 import { ServerStackIcon } from "@/components/icons/server-stack";
 import { ShieldIcon } from "@/components/icons/shield";
+import { ShopIcon } from "@/components/icons/shop";
 import { SparkleBulbIcon } from "@/components/icons/sparkle-bulb";
 import { SparkleStarIcon } from "@/components/icons/sparkle-star";
+import { StreetViewIcon } from "@/components/icons/street-view";
 import { SunMagnifierIcon } from "@/components/icons/sun-magnifier";
 import { TargetTentIcon } from "@/components/icons/target-tent";
 import { UrgentMailIcon } from "@/components/icons/urgent-mail";
@@ -63,6 +80,7 @@ import { WalletIcon } from "@/components/icons/wallet";
 import { WandBurstIcon } from "@/components/icons/wand-burst";
 import { WatchFaceIcon } from "@/components/icons/watch-face";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
+import { WindroseIcon } from "@/components/icons/windrose";
 import { WrenchIcon } from "@/components/icons/wrench";
 
 // 10x10 = 100 slots. Cells without an entry render as empty glass tiles.
@@ -131,6 +149,24 @@ const SLOTS: ReactNode[] = [
   <BulldozerIcon key="bulldozer" className="h-3/5 w-3/5" />,
   <HeadsetIcon key="headset" className="h-3/5 w-3/5" />,
   <BiohazardIcon key="biohazard" className="h-3/5 w-3/5" />,
+  <PathIcon key="path" className="h-3/5 w-3/5" />,
+  <HandshakeIcon key="handshake" className="h-3/5 w-3/5" />,
+  <WindroseIcon key="windrose" className="h-3/5 w-3/5" />,
+  <StreetViewIcon key="street-view" className="h-3/5 w-3/5" />,
+  <LayersIcon key="layers" className="h-3/5 w-3/5" />,
+  <LighthouseIcon key="lighthouse" className="h-3/5 w-3/5" />,
+  <DonutChartIcon key="donut-chart" className="h-3/5 w-3/5" />,
+  <DatabaseStackIcon key="database-stack" className="h-3/5 w-3/5" />,
+  <ChangeArrowIcon key="change-arrow" className="h-3/5 w-3/5" />,
+  <CheckmarkIcon key="checkmark" className="h-3/5 w-3/5" />,
+  <PadlockIcon key="padlock" className="h-3/5 w-3/5" />,
+  <MountainIcon key="mountain" className="h-3/5 w-3/5" />,
+  <BlogIcon key="blog" className="h-3/5 w-3/5" />,
+  <ShopIcon key="shop" className="h-3/5 w-3/5" />,
+  <FlowChartIcon key="flow-chart" className="h-3/5 w-3/5" />,
+  <GoalIcon key="goal" className="h-3/5 w-3/5" />,
+  <MapIcon key="map" className="h-3/5 w-3/5" />,
+  <NavigationIcon key="navigation" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
