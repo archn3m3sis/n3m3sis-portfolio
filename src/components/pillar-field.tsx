@@ -84,27 +84,62 @@ function makeSimplex() {
 }
 
 // ------------------------------------------------------------------
-// Shared wave-field state.
+// Shared world state.
 //
-// Both the pillar field AND any platform that wants to "ride" the wave
-// (bobbing like a boat) need to sample the same noise function and
-// time/pan offsets, otherwise the platform would drift relative to the
-// pillars beneath it. We hoist the simplex sampler and the offset
-// state to module scope so anyone in the scene can read it via
-// sampleWaveHeight(x, z).
+// _simplex / _offsets — wave-field noise. The Pillars and Platforms
+// both sample the same noise via sampleWaveHeight(x, z) so they
+// stay locked to the same surface.
 //
-// Only Pillars writes to _offsets — every other consumer is read-only.
+// _input — raw mouse + keyboard state, written by listeners in
+// CameraController.
+//
+// _camera — derived camera state (yaw, pitch, velocity). Written
+// each frame by CameraController; read by DPad / others that want
+// to visualize movement direction.
 // ------------------------------------------------------------------
 const _simplex = makeSimplex();
 const _offsets = { x: 0, y: 0, z: 0 };
 
+const _input = {
+  // Normalized [-1, 1], origin at viewport center.
+  mouseX: 0,
+  mouseY: 0,
+  // Keyboard state — 0 or 1 per direction.
+  forward: 0,
+  back: 0,
+  left: 0,
+  right: 0,
+};
+
+const _camera = {
+  // Current orientation (radians). Pitch starts at -0.5 to match
+  // the original "look down at the floor from above" framing
+  // (camera at y=14 looking at y=2 ≈ atan2(-12, 22) ≈ -0.5).
+  yaw: 0,
+  pitch: -0.5,
+  // World position of the camera. Updated each frame by keyboard
+  // input with friction. Initialized to match the original static
+  // camera at (0, 14, 22). Y stays fixed at CAMERA_Y so the user
+  // can't fly up/down (this is a navigation, not a flight sim).
+  worldX: 0,
+  worldZ: 22,
+  // Velocity in world units/sec. Friction in CameraController.
+  velX: 0,
+  velZ: 0,
+};
+
+const CAMERA_Y = 14;
+const MOVE_ACCEL = 26; // world units / sec², input-scaled
+const MOVE_FRICTION = 4.2; // exponential damping per sec
+
+// Noise sampled at WORLD coordinates so platforms (which sit at fixed
+// world positions) get their wave height from the same pattern the
+// pillars are drawing. _offsets.x/z are no longer used — the camera
+// moves through the world instead of the world scrolling past the
+// camera. _offsets.y still drives the wave's time evolution.
 function sampleWaveHeight(x: number, z: number): number {
   const ns = TWEAKS.noiseScale;
-  const nv = _simplex(
-    x * ns * 0.5 + _offsets.x,
-    _offsets.y,
-    z * ns * 0.325 + _offsets.z,
-  );
+  const nv = _simplex(x * ns * 0.5, _offsets.y, z * ns * 0.325);
   const nSq = nv * nv;
   return Math.max(0.04, nSq * TWEAKS.maxHeight + 0.04);
 }
@@ -127,10 +162,6 @@ function palette(t: number): THREE.Color {
 
 function Pillars() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  // Mouse-driven pan: cursor's normalized position [-1, 1] in viewport.
-  // The actual offsets lerp toward target * panStrength each frame so the
-  // motion feels organic instead of snapping with the cursor.
-  const mouseTargetRef = useRef({ x: 0, z: 0 });
   const { gl } = useThree();
 
   const { positions, count } = useMemo(() => {
@@ -193,76 +224,38 @@ function Pillars() {
     gl.outputColorSpace = THREE.SRGBColorSpace;
   }, [gl]);
 
-  useEffect(() => {
-    const updateFromXY = (clientX: number, clientY: number) => {
-      const w = window.innerWidth || 1;
-      const h = window.innerHeight || 1;
-      // Normalize to [-1, 1] with origin at viewport center.
-      mouseTargetRef.current.x = (clientX / w) * 2 - 1;
-      mouseTargetRef.current.z = (clientY / h) * 2 - 1;
-    };
-    const onPointer = (e: PointerEvent) => updateFromXY(e.clientX, e.clientY);
-    const onMouse = (e: MouseEvent) => updateFromXY(e.clientX, e.clientY);
-
-    // Listen to BOTH pointermove and mousemove. Some browsers stop firing
-    // pointermove after a window blur/focus cycle even though mousemove
-    // continues — listening to both makes tracking robust to focus changes,
-    // tab switches, and DevTools opening/closing. Capture-phase so we
-    // receive events even if downstream handlers stopPropagation() them.
-    const opts: AddEventListenerOptions = { capture: true, passive: true };
-    window.addEventListener("pointermove", onPointer, opts);
-    window.addEventListener("mousemove", onMouse, opts);
-
-    // When the page regains visibility/focus, ensure tracking is alive
-    // by issuing a no-op event to wake the system. We can't read current
-    // cursor coords without an event, but this guarantees our listeners
-    // are still bound and resampling on the next mouse move.
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") {
-        // Listeners are stateless — the next real event will resample.
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      window.removeEventListener("pointermove", onPointer, opts);
-      window.removeEventListener("mousemove", onMouse, opts);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, []);
-
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame((_state, dt) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    _offsets.y += dt * TWEAKS.timeSpeed;
 
-    // Mouse-driven pan: lerp offsets toward (target * panStrength) so motion
-    // is smooth, not jittery. Larger lerpRate = more responsive; smaller =
-    // more dampened. dt-aware so the feel is frame-rate independent.
-    const targetX = mouseTargetRef.current.x * TWEAKS.panStrength;
-    const targetZ = mouseTargetRef.current.z * TWEAKS.panStrength;
-    const lerpAlpha = 1 - Math.pow(1 - TWEAKS.panLerp, dt * 60);
-    _offsets.x += (targetX - _offsets.x) * lerpAlpha;
-    _offsets.z += (targetZ - _offsets.z) * lerpAlpha;
-
+    // Pillars are positioned in a rolling window AROUND the camera —
+    // each instance's world position is camera + relativeOffset. As
+    // the camera moves through world, the SAME instance slot occupies
+    // a different world location each frame, sampling new noise. This
+    // gives the user a sense of moving through an infinite field
+    // while keeping the rendered count finite.
+    //
+    // Noise is sampled at the WORLD position so the underlying
+    // pattern is fixed-in-world: when you move forward, you discover
+    // new heights ahead and the heights behind you fall away.
+    const cx = _camera.worldX;
+    const cz = _camera.worldZ;
     const ns = TWEAKS.noiseScale;
-    const offX = _offsets.x;
     const offY = _offsets.y;
-    const offZ = _offsets.z;
     for (let i = 0; i < count; i++) {
-      const x = positions[i * 2] as number;
-      const z = positions[i * 2 + 1] as number;
-      const nv = _simplex(x * ns * 0.5 + offX, offY, z * ns * 0.325 + offZ);
+      const relX = positions[i * 2] as number;
+      const relZ = positions[i * 2 + 1] as number;
+      const wx = cx + relX;
+      const wz = cz + relZ;
+      const nv = _simplex(wx * ns * 0.5, offY, wz * ns * 0.325);
       const nSq = nv * nv;
       const h = Math.max(0.04, nSq * TWEAKS.maxHeight + 0.04);
-      dummy.position.set(x, 0, z);
+      dummy.position.set(wx, 0, wz);
       dummy.scale.set(1, h, 1);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
-      // Drive palette directly from height fraction so low pillars are
-      // emerald and tall pillars are near-white.
       palette(nSq);
       mesh.setColorAt(i, tmpCol);
     }
@@ -855,11 +848,151 @@ function DPad({
   );
 }
 
+// ------------------------------------------------------------------
+// CameraController — owns input listeners and camera transform.
+//
+// Mouse → look (yaw/pitch with deadzone)
+//   Cursor outside the central deadzone tilts the view toward that
+//   side. Deadzone keeps cursor-driven UI hover from constantly
+//   rotating the world. Smoothed to a target via exponential damping.
+//
+// WASD / Arrows → travel through the world
+//   Keys generate acceleration in the camera's facing direction
+//   (yaw-relative forward + strafe). Velocity has friction so motion
+//   ramps and decelerates instead of teleporting.
+//   Camera position is updated in world space. Pillars track the
+//   camera via their relative-offset rendering; platforms stay at
+//   their fixed world coords, so they grow as you approach them.
+//
+// _offsets.y advances time so the wave keeps animating regardless
+// of camera movement.
+// ------------------------------------------------------------------
+function CameraController() {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    // YXZ Euler order = FPS-style: yaw first, then pitch. With the
+    // default XYZ order, yaw rotates the pitched view, which feels
+    // wrong (looking up tilts when you turn).
+    camera.rotation.order = "YXZ";
+    camera.position.set(_camera.worldX, CAMERA_Y, _camera.worldZ);
+    camera.rotation.y = _camera.yaw;
+    camera.rotation.x = _camera.pitch;
+  }, [camera]);
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent | MouseEvent) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      _input.mouseX = (e.clientX / w) * 2 - 1;
+      _input.mouseY = (e.clientY / h) * 2 - 1;
+    };
+    const setKey = (k: string, v: number) => {
+      switch (k) {
+        case "w":
+        case "arrowup":
+          _input.forward = v;
+          break;
+        case "s":
+        case "arrowdown":
+          _input.back = v;
+          break;
+        case "a":
+        case "arrowleft":
+          _input.left = v;
+          break;
+        case "d":
+        case "arrowright":
+          _input.right = v;
+          break;
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => setKey(e.key.toLowerCase(), 1);
+    const onKeyUp = (e: KeyboardEvent) => setKey(e.key.toLowerCase(), 0);
+    const onBlur = () => {
+      _input.forward = _input.back = _input.left = _input.right = 0;
+    };
+    const opts: AddEventListenerOptions = { capture: true, passive: true };
+    window.addEventListener("pointermove", onMove, opts);
+    window.addEventListener("mousemove", onMove, opts);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("pointermove", onMove, opts);
+      window.removeEventListener("mousemove", onMove, opts);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
+  useFrame((_state, dt) => {
+    // Time evolution of the wave field.
+    _offsets.y += dt * TWEAKS.timeSpeed;
+
+    // ---- Mouse → yaw / pitch (with deadzone) ----
+    const dzX = 0.18;
+    const dzY = 0.4;
+    const maxYaw = 0.55; // ~31° to either side at edge of screen
+    const maxPitchVar = 0.18;
+
+    const mx = _input.mouseX;
+    let yawTarget = 0;
+    if (mx > dzX) yawTarget = -((mx - dzX) / (1 - dzX)) * maxYaw;
+    else if (mx < -dzX) yawTarget = -((mx + dzX) / (1 - dzX)) * maxYaw;
+
+    const my = _input.mouseY;
+    let pitchTarget = -0.5;
+    if (my > dzY) pitchTarget += -((my - dzY) / (1 - dzY)) * maxPitchVar;
+    else if (my < -dzY) pitchTarget += -((my + dzY) / (1 - dzY)) * maxPitchVar;
+
+    const rateRot = 6;
+    const aRot = 1 - Math.exp(-rateRot * dt);
+    _camera.yaw += (yawTarget - _camera.yaw) * aRot;
+    _camera.pitch += (pitchTarget - _camera.pitch) * aRot;
+
+    camera.rotation.y = _camera.yaw;
+    camera.rotation.x = _camera.pitch;
+
+    // ---- Keyboard → travel through world (yaw-relative) ----
+    const fInput = _input.forward - _input.back;
+    const sInput = _input.right - _input.left;
+
+    // Yaw-relative basis vectors (XZ plane). With yaw=0, forward is -Z
+    // (matches three.js default camera looking down -Z).
+    const fwdX = Math.sin(_camera.yaw);
+    const fwdZ = -Math.cos(_camera.yaw);
+    const rightX = Math.cos(_camera.yaw);
+    const rightZ = Math.sin(_camera.yaw);
+
+    const aX = (fInput * fwdX + sInput * rightX) * MOVE_ACCEL;
+    const aZ = (fInput * fwdZ + sInput * rightZ) * MOVE_ACCEL;
+    _camera.velX += aX * dt;
+    _camera.velZ += aZ * dt;
+
+    // Exponential friction — frame-rate independent.
+    const friction = Math.exp(-MOVE_FRICTION * dt);
+    _camera.velX *= friction;
+    _camera.velZ *= friction;
+
+    _camera.worldX += _camera.velX * dt;
+    _camera.worldZ += _camera.velZ * dt;
+
+    camera.position.x = _camera.worldX;
+    camera.position.z = _camera.worldZ;
+    camera.position.y = CAMERA_Y;
+  });
+
+  return null;
+}
+
 function Scene() {
   return (
     <>
       <fog attach="fog" args={[0x05060a, 18, 80]} />
       <color attach="background" args={[0x05060a]} />
+      <CameraController />
       {/* Lights desaturated to cool greys. The previous blue/magenta
           two-light setup gave the scene a vivid colored wash; now both
           lights are near-neutral so the pillars read as monochrome. */}
@@ -891,7 +1024,6 @@ export function PillarField() {
         dpr={[1, 2]}
         gl={{ antialias: true }}
         camera={{ position: [0, 14, 22], fov: 60, near: 0.1, far: 300 }}
-        onCreated={({ camera }) => camera.lookAt(0, 2, 0)}
       >
         <Scene />
       </Canvas>
