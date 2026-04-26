@@ -47,7 +47,6 @@ import { PageFlagIcon } from "@/components/icons/page-flag";
 import { QuadFanIcon } from "@/components/icons/quad-fan";
 import { PhotoStackIcon } from "@/components/icons/photo-stack";
 import { ScreenTextIcon } from "@/components/icons/screen-text";
-import { ServerStackIcon } from "@/components/icons/server-stack";
 import { ShieldIcon } from "@/components/icons/shield";
 import { SparkleBulbIcon } from "@/components/icons/sparkle-bulb";
 import { SparkleStarIcon } from "@/components/icons/sparkle-star";
@@ -86,7 +85,6 @@ const SLOTS: ReactNode[] = [
   <LockShieldIcon key="lock-shield" className="h-3/5 w-3/5" />,
   <CursorClipIcon key="cursor-clip" className="h-3/5 w-3/5" />,
   <FlagPinIcon key="flag-pin" className="h-3/5 w-3/5" />,
-  <ServerStackIcon key="server-stack" className="h-3/5 w-3/5" />,
   <CometIcon key="comet" className="h-3/5 w-3/5" />,
   <HeadphonesIcon key="headphones" className="h-3/5 w-3/5" />,
   <PageFlagIcon key="page-flag" className="h-3/5 w-3/5" />,
