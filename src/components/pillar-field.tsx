@@ -83,13 +83,19 @@ function makeSimplex() {
 }
 
 const tmpCol = new THREE.Color();
-// Near-monochrome palette. Luminance varies with the noise field; hue
-// holds at a faint cool tint so the scene reads as severe / muted
-// rather than the previous cyan-magenta cosine-palette wash.
+// t = 0 (lowest pillars) → dark emerald undertone, so even the
+// shortest pillars are visible against the near-black background and
+// the field has subtle chromatic break-up.
+// t = 1 (tallest pillars) → near-neutral cool white, in keeping with
+// the dark-persona palette.
 function palette(t: number): THREE.Color {
-  const v = 0.18 + 0.55 * t; // 0.18 -> 0.73
-  // 5% extra blue, 3% less red — barely-perceptible cool cast.
-  return tmpCol.setRGB(v * 0.97, v, v * 1.05);
+  const er = 0.06, eg = 0.22, eb = 0.14; // dark emerald
+  const pr = 0.78, pg = 0.80, pb = 0.85; // cool near-white
+  return tmpCol.setRGB(
+    er + (pr - er) * t,
+    eg + (pg - eg) * t,
+    eb + (pb - eb) * t,
+  );
 }
 
 function Pillars() {
@@ -150,7 +156,7 @@ function Pillars() {
         )
         .replace(
           "#include <opaque_fragment>",
-          `  float heightMask = smoothstep(0.0, 0.75, vWorldY / ${TWEAKS.maxHeight.toFixed(2)});\n  float dim = 0.07 + 0.93*heightMask;\n  outgoingLight *= dim;\n  #include <opaque_fragment>`,
+          `  float heightMask = smoothstep(0.0, 0.75, vWorldY / ${TWEAKS.maxHeight.toFixed(2)});\n  float dim = 0.30 + 0.70*heightMask;\n  outgoingLight *= dim;\n  #include <opaque_fragment>`,
         );
     };
     return m;
@@ -230,9 +236,9 @@ function Pillars() {
       dummy.scale.set(1, h, 1);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
-      let tC = (nSq * 0.08 * TWEAKS.maxHeight + 0.5) % 1;
-      if (tC < 0) tC += 1;
-      palette(tC);
+      // Drive palette directly from height fraction so low pillars are
+      // emerald and tall pillars are near-white.
+      palette(nSq);
       mesh.setColorAt(i, tmpCol);
     }
     mesh.instanceMatrix.needsUpdate = true;
