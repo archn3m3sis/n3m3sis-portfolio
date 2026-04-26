@@ -48,7 +48,7 @@ export default function RootLayout({
             top bar so the bar can sit at the absolute top edge. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pt-20 opacity-50 mix-blend-screen"
+          className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pt-32 opacity-50 mix-blend-screen"
         >
           <NorthPointerIcon size={44} />
         </div>

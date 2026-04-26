@@ -28,29 +28,27 @@ const ITEMS: Item[] = [
 
 export function TopBar() {
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-4">
-      <nav
-        aria-label="External links"
-        className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-black/30 px-2 py-1.5 backdrop-blur-md backdrop-saturate-150 shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
-      >
-        {ITEMS.map(({ label, href, Icon }) => {
-          const external = href.startsWith("http");
-          return (
-            <a
-              key={label}
-              href={href}
-              aria-label={label}
-              {...(external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
-              className="group relative flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-white/10"
-            >
-              <Icon
-                size={22}
-                className="opacity-80 transition-all duration-200 group-hover:opacity-100 group-hover:drop-shadow-[0_0_6px_rgba(201,159,255,0.6)]"
-              />
-            </a>
-          );
-        })}
-      </nav>
+    <header
+      aria-label="External links"
+      className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-8 pt-4 md:px-16 md:pt-6"
+    >
+      {ITEMS.map(({ label, href, Icon }) => {
+        const external = href.startsWith("http");
+        return (
+          <a
+            key={label}
+            href={href}
+            aria-label={label}
+            {...(external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
+            className="group pointer-events-auto inline-flex items-center justify-center"
+          >
+            <Icon
+              size={88}
+              className="opacity-80 transition-all duration-200 group-hover:opacity-100 group-hover:drop-shadow-[0_0_14px_rgba(201,159,255,0.7)]"
+            />
+          </a>
+        );
+      })}
     </header>
   );
 }

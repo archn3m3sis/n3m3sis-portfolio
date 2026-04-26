@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 const TWEAKS = {
@@ -82,6 +82,32 @@ function makeSimplex() {
   };
 }
 
+// ------------------------------------------------------------------
+// Shared wave-field state.
+//
+// Both the pillar field AND any platform that wants to "ride" the wave
+// (bobbing like a boat) need to sample the same noise function and
+// time/pan offsets, otherwise the platform would drift relative to the
+// pillars beneath it. We hoist the simplex sampler and the offset
+// state to module scope so anyone in the scene can read it via
+// sampleWaveHeight(x, z).
+//
+// Only Pillars writes to _offsets — every other consumer is read-only.
+// ------------------------------------------------------------------
+const _simplex = makeSimplex();
+const _offsets = { x: 0, y: 0, z: 0 };
+
+function sampleWaveHeight(x: number, z: number): number {
+  const ns = TWEAKS.noiseScale;
+  const nv = _simplex(
+    x * ns * 0.5 + _offsets.x,
+    _offsets.y,
+    z * ns * 0.325 + _offsets.z,
+  );
+  const nSq = nv * nv;
+  return Math.max(0.04, nSq * TWEAKS.maxHeight + 0.04);
+}
+
 const tmpCol = new THREE.Color();
 // t = 0 (lowest pillars) → dark emerald undertone, so even the
 // shortest pillars are visible against the near-black background and
@@ -104,8 +130,6 @@ function Pillars() {
   // The actual offsets lerp toward target * panStrength each frame so the
   // motion feels organic instead of snapping with the cursor.
   const mouseTargetRef = useRef({ x: 0, z: 0 });
-  const offsetRef = useRef({ x: 0, y: 0, z: 0 });
-  const simplex01 = useMemo(() => makeSimplex(), []);
   const { gl } = useThree();
 
   const { positions, count } = useMemo(() => {
@@ -211,7 +235,7 @@ function Pillars() {
   useFrame((_state, dt) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    offsetRef.current.y += dt * TWEAKS.timeSpeed;
+    _offsets.y += dt * TWEAKS.timeSpeed;
 
     // Mouse-driven pan: lerp offsets toward (target * panStrength) so motion
     // is smooth, not jittery. Larger lerpRate = more responsive; smaller =
@@ -219,17 +243,17 @@ function Pillars() {
     const targetX = mouseTargetRef.current.x * TWEAKS.panStrength;
     const targetZ = mouseTargetRef.current.z * TWEAKS.panStrength;
     const lerpAlpha = 1 - Math.pow(1 - TWEAKS.panLerp, dt * 60);
-    offsetRef.current.x += (targetX - offsetRef.current.x) * lerpAlpha;
-    offsetRef.current.z += (targetZ - offsetRef.current.z) * lerpAlpha;
+    _offsets.x += (targetX - _offsets.x) * lerpAlpha;
+    _offsets.z += (targetZ - _offsets.z) * lerpAlpha;
 
     const ns = TWEAKS.noiseScale;
-    const offX = offsetRef.current.x;
-    const offY = offsetRef.current.y;
-    const offZ = offsetRef.current.z;
+    const offX = _offsets.x;
+    const offY = _offsets.y;
+    const offZ = _offsets.z;
     for (let i = 0; i < count; i++) {
       const x = positions[i * 2] as number;
       const z = positions[i * 2 + 1] as number;
-      const nv = simplex01(x * ns * 0.5 + offX, offY, z * ns * 0.325 + offZ);
+      const nv = _simplex(x * ns * 0.5 + offX, offY, z * ns * 0.325 + offZ);
       const nSq = nv * nv;
       const h = Math.max(0.04, nSq * TWEAKS.maxHeight + 0.04);
       dummy.position.set(x, 0, z);
@@ -254,6 +278,325 @@ function Pillars() {
   );
 }
 
+// ------------------------------------------------------------------
+// Platform — a glassmorphic disk that floats on the wave like a boat.
+//
+// Physics:
+//   - Vertical position is driven by a critically-damped spring whose
+//     target is the wave height beneath the platform plus a small
+//     hover offset and a subtle ambient bob (so even on a flat sea
+//     the platform breathes).
+//   - Pitch (rotation X) and roll (rotation Z) come from the gradient
+//     of the wave at the platform's footprint — sampling the wave at
+//     four cardinal offsets and using the central differences. This
+//     is what makes it feel like a boat heeling into a swell rather
+//     than a rigid object riding a piston.
+//   - A slow yaw oscillation gives it the lazy "boat at anchor" sway.
+//
+// Visuals:
+//   - Oval cylinder slice (scaled X != Z) in physically-based glass-
+//     ish material. No transmission (too expensive); we fake glass
+//     with low roughness + clearcoat + soft emissive.
+//   - Bright cyan emissive ring on the top edge (rim light).
+//   - Softer blue underglow ring on the bottom (water reflection).
+//   - 4 floating tokens orbit on an elliptical path matching the
+//     platform's footprint, each with its own bob phase and self-spin.
+// ------------------------------------------------------------------
+
+type FloatingTokenSpec = {
+  shape: "octahedron" | "icosahedron" | "box" | "torus";
+  color: string;
+  scale: number;
+};
+
+const PLATFORM_TOKENS: FloatingTokenSpec[] = [
+  { shape: "octahedron", color: "#86e4ff", scale: 0.42 },
+  { shape: "icosahedron", color: "#c99fff", scale: 0.46 },
+  { shape: "box", color: "#5bdd46", scale: 0.5 },
+  { shape: "torus", color: "#ff8df0", scale: 0.4 },
+];
+
+function FloatingToken({
+  spec,
+  orbitX,
+  orbitZ,
+  phase,
+  hoverBoost,
+}: {
+  spec: FloatingTokenSpec;
+  orbitX: number;
+  orbitZ: number;
+  phase: number;
+  hoverBoost: { current: number };
+}) {
+  const ref = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    const m = ref.current;
+    if (!m) return;
+    const t = state.clock.elapsedTime;
+    // Local vertical bob — independent of orbit. Adds organic motion.
+    m.position.y = Math.sin(t * 0.9 + phase) * 0.18;
+    // Self-spin: each axis rotates at a slightly different rate so the
+    // token never settles into a regular flicker.
+    m.rotation.x = t * 0.55 + phase;
+    m.rotation.y = t * 0.32 + phase * 1.7;
+  });
+
+  const geometry = (() => {
+    switch (spec.shape) {
+      case "octahedron":
+        return <octahedronGeometry args={[spec.scale, 0]} />;
+      case "icosahedron":
+        return <icosahedronGeometry args={[spec.scale, 1]} />;
+      case "box":
+        return <boxGeometry args={[spec.scale, spec.scale, spec.scale]} />;
+      case "torus":
+        return <torusGeometry args={[spec.scale * 0.85, spec.scale * 0.28, 14, 28]} />;
+    }
+  })();
+
+  return (
+    <mesh ref={ref} position={[orbitX, 0, orbitZ]}>
+      {geometry}
+      <meshStandardMaterial
+        color={spec.color}
+        emissive={spec.color}
+        emissiveIntensity={1.5 + hoverBoost.current * 1.2}
+        roughness={0.28}
+        metalness={0.45}
+        toneMapped={true}
+      />
+    </mesh>
+  );
+}
+
+function Platform({
+  position = [0, 0, 0] as [number, number, number],
+  radiusX = 5.5,
+  radiusZ = 4.2,
+  thickness = 0.45,
+  hoverOffset = 1.4,
+}: {
+  position?: [number, number, number];
+  radiusX?: number;
+  radiusZ?: number;
+  thickness?: number;
+  hoverOffset?: number;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const orbitRef = useRef<THREE.Group>(null);
+  const velY = useRef(0);
+  const hoverBoost = useRef(0);
+  const [hovered, setHovered] = useState(false);
+
+  // Initialize y so the first frame doesn't snap from 0 to ~1.4.
+  // Sample once and seed the position. The wave is non-zero so this
+  // avoids a one-frame dive.
+  useEffect(() => {
+    if (!groupRef.current) return;
+    const seed =
+      sampleWaveHeight(position[0], position[2]) + hoverOffset;
+    groupRef.current.position.y = seed;
+  }, [position, hoverOffset]);
+
+  useFrame((state, dt) => {
+    const g = groupRef.current;
+    if (!g) return;
+    const t = state.clock.elapsedTime;
+    const [px, , pz] = position;
+
+    // Footprint sampling distance — close to the platform's outer edge
+    // so the gradient reflects the actual wave the deck would feel.
+    const sampleDist = Math.max(radiusX, radiusZ) * 0.65;
+    const hC = sampleWaveHeight(px, pz);
+    const hN = sampleWaveHeight(px, pz - sampleDist);
+    const hS = sampleWaveHeight(px, pz + sampleDist);
+    const hE = sampleWaveHeight(px + sampleDist, pz);
+    const hW = sampleWaveHeight(px - sampleDist, pz);
+
+    // Average the center and the four cardinals so a single tall pillar
+    // doesn't yank the entire platform up by itself — a real boat
+    // averages buoyancy across its hull.
+    const hAvg = (hC * 2 + hN + hS + hE + hW) * 0.16667;
+
+    // Gentle ambient bob layered on top of the wave-driven target.
+    // Two sinusoids at incommensurate frequencies prevent visible
+    // periodicity.
+    const ambientBob =
+      Math.sin(t * 0.7) * 0.09 + Math.sin(t * 0.43 + 1.3) * 0.06;
+    const targetY = hAvg + hoverOffset + ambientBob;
+
+    // Critically-damped spring toward target. The values below were
+    // tuned by feel: stiffness 4.8 / damping 2.0 gives a boat-like
+    // settle — overshoots a touch, then steadies — rather than the
+    // robotic step you get from straight lerp().
+    const stiffness = 4.8;
+    const damping = 2.0;
+    const dy = targetY - g.position.y;
+    velY.current += (stiffness * dy - damping * velY.current) * dt;
+    g.position.y += velY.current * dt;
+
+    // Pitch / roll from the wave gradient at the footprint.
+    // pitchTarget: positive when south is higher than north (nose up).
+    // rollTarget:  positive when west is higher than east  (port up).
+    const tiltGain = 0.55;
+    const pitchTarget = ((hS - hN) / (2 * sampleDist)) * tiltGain;
+    const rollTarget = ((hW - hE) / (2 * sampleDist)) * tiltGain;
+
+    // Add ambient sway so the boat never sits perfectly still.
+    const swayPitch = Math.sin(t * 0.31) * 0.025;
+    const swayRoll = Math.cos(t * 0.27 + 0.7) * 0.03;
+
+    // Frame-rate-independent damp toward the tilt targets.
+    const tiltDecay = 1 - Math.exp(-dt * 3.2);
+    g.rotation.x += (pitchTarget + swayPitch - g.rotation.x) * tiltDecay;
+    g.rotation.z += (rollTarget + swayRoll - g.rotation.z) * tiltDecay;
+    // Slow yaw drift — anchor sway.
+    g.rotation.y = Math.sin(t * 0.18) * 0.07;
+
+    // Orbit the tokens. They sit in a child group whose y-rotation
+    // accumulates linearly so the orbit is constant-velocity, plus a
+    // gentle boost when the platform is hovered.
+    if (orbitRef.current) {
+      const orbitSpeed = 0.22 + hoverBoost.current * 0.25;
+      orbitRef.current.rotation.y += dt * orbitSpeed;
+    }
+
+    // Smooth toward the hover state. Damped so cursor jitter doesn't
+    // strobe the rim brightness.
+    const target = hovered ? 1 : 0;
+    hoverBoost.current += (target - hoverBoost.current) * (1 - Math.exp(-dt * 6));
+  });
+
+  // Materials change when hovered — emissive intensity jumps. We
+  // can't read hoverBoost.current at render time without forcing a
+  // re-render, so instead use a uniform-style ref applied via
+  // material.emissiveIntensity inside useFrame. Done for the rim
+  // ring below via a ref handle.
+  const rimRef = useRef<THREE.Mesh>(null);
+  const underglowRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    if (rimRef.current) {
+      const m = rimRef.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.7 + hoverBoost.current * 0.3;
+    }
+    if (underglowRef.current) {
+      const m = underglowRef.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.35 + hoverBoost.current * 0.25;
+    }
+  });
+
+  return (
+    <group
+      ref={groupRef}
+      position={position}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* Glass disk body. Slight inverted-cone taper (top radius
+          larger than bottom) so the rim catches the lights and reads
+          as a chunky puck rather than a flat coin. */}
+      <mesh scale={[radiusX, thickness, radiusZ]}>
+        <cylinderGeometry args={[1, 0.94, 1, 96, 1]} />
+        <meshPhysicalMaterial
+          color="#0c1626"
+          roughness={0.12}
+          metalness={0.35}
+          clearcoat={1}
+          clearcoatRoughness={0.04}
+          transparent
+          opacity={0.72}
+          emissive="#0a2236"
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+
+      {/* Top emissive rim — sharp cyan, sits a hair above the disk
+          surface to avoid z-fighting. */}
+      <mesh
+        ref={rimRef}
+        position={[0, thickness * 0.5 + 0.002, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[radiusX, radiusZ, 1]}
+      >
+        <ringGeometry args={[0.94, 1.0, 128]} />
+        <meshBasicMaterial
+          color="#86e4ff"
+          transparent
+          opacity={0.7}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* Bottom underglow — wider, softer, blue. Reads as light
+          bouncing off the wave back onto the deck's underside. */}
+      <mesh
+        ref={underglowRef}
+        position={[0, -thickness * 0.5 - 0.002, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        scale={[radiusX * 1.05, radiusZ * 1.05, 1]}
+      >
+        <ringGeometry args={[0.86, 1.0, 96]} />
+        <meshBasicMaterial
+          color="#3a8fbf"
+          transparent
+          opacity={0.35}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* Soft inner top-cap glow — a faint wash on the deck so it
+          doesn't look like a black hole when the rim lights it. */}
+      <mesh
+        position={[0, thickness * 0.5 + 0.003, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[radiusX * 0.88, radiusZ * 0.88, 1]}
+      >
+        <circleGeometry args={[1, 80]} />
+        <meshBasicMaterial
+          color="#13283c"
+          transparent
+          opacity={0.22}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Floating tokens — orbiting just above the deck. They live
+          in a child group whose y-rotation animates the orbit; each
+          token also has its own local bob + self-spin. */}
+      <group ref={orbitRef} position={[0, thickness * 0.5 + 1.2, 0]}>
+        {PLATFORM_TOKENS.map((spec, i) => {
+          const angle = (i / PLATFORM_TOKENS.length) * Math.PI * 2;
+          const orbitR = Math.min(radiusX, radiusZ) * 0.62;
+          // Elliptical orbit matches the platform's oval shape.
+          const ox = Math.cos(angle) * radiusX * 0.6;
+          const oz = Math.sin(angle) * radiusZ * 0.6;
+          // Suppress unused warning — we calculated orbitR but the
+          // ellipse uses radiusX/radiusZ directly.
+          void orbitR;
+          return (
+            <FloatingToken
+              key={spec.shape}
+              spec={spec}
+              orbitX={ox}
+              orbitZ={oz}
+              phase={i * 1.2}
+              hoverBoost={hoverBoost}
+            />
+          );
+        })}
+      </group>
+    </group>
+  );
+}
+
 function Scene() {
   return (
     <>
@@ -270,6 +613,9 @@ function Scene() {
         <meshStandardMaterial color={0x040508} roughness={0.85} metalness={0.15} />
       </mesh>
       <Pillars />
+      {/* First content-zone platform. Future audience-specific zones
+          can be additional <Platform position={[x, 0, z]} /> calls. */}
+      <Platform position={[0, 0, 0]} />
     </>
   );
 }
