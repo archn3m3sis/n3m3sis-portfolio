@@ -24,7 +24,6 @@ import { DatabaseIcon } from "@/components/icons/database";
 import { DatabaseStackIcon } from "@/components/icons/database-stack";
 import { DiagonalBannerIcon } from "@/components/icons/diagonal-banner";
 import { DocumentSearchIcon } from "@/components/icons/document-search";
-import { DonutChartIcon } from "@/components/icons/donut-chart";
 import { DoubleArrowIcon } from "@/components/icons/double-arrow";
 import { DownloadCardIcon } from "@/components/icons/download-card";
 import { DumbbellIcon } from "@/components/icons/dumbbell";
@@ -155,7 +154,6 @@ const SLOTS: ReactNode[] = [
   <StreetViewIcon key="street-view" className="h-3/5 w-3/5" />,
   <LayersIcon key="layers" className="h-3/5 w-3/5" />,
   <LighthouseIcon key="lighthouse" className="h-3/5 w-3/5" />,
-  <DonutChartIcon key="donut-chart" className="h-3/5 w-3/5" />,
   <DatabaseStackIcon key="database-stack" className="h-3/5 w-3/5" />,
   <ChangeArrowIcon key="change-arrow" className="h-3/5 w-3/5" />,
   <CheckmarkIcon key="checkmark" className="h-3/5 w-3/5" />,
