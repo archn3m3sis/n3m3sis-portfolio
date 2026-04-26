@@ -54,7 +54,6 @@ import { SparkleStarIcon } from "@/components/icons/sparkle-star";
 import { StarPointsIcon } from "@/components/icons/star-points";
 import { SunMagnifierIcon } from "@/components/icons/sun-magnifier";
 import { TargetTentIcon } from "@/components/icons/target-tent";
-import { TeardropIcon } from "@/components/icons/teardrop";
 import { WalletIcon } from "@/components/icons/wallet";
 import { WandBurstIcon } from "@/components/icons/wand-burst";
 import { WideMonitorIcon } from "@/components/icons/wide-monitor";
@@ -100,7 +99,6 @@ const SLOTS: ReactNode[] = [
   <ScreenTextIcon key="screen-text" className="h-3/5 w-3/5" />,
   <CalendarGridIcon key="calendar-grid" className="h-3/5 w-3/5" />,
   <DocumentSearchIcon key="document-search" className="h-3/5 w-3/5" />,
-  <TeardropIcon key="teardrop" className="h-3/5 w-3/5" />,
   <StarPointsIcon key="star-points" className="h-3/5 w-3/5" />,
   <DoubleArrowIcon key="double-arrow" className="h-3/5 w-3/5" />,
   <SparkleStarIcon key="sparkle-star" className="h-3/5 w-3/5" />,
