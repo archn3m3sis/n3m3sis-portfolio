@@ -46,7 +46,7 @@ export function GlassCard({ children, className }: Props) {
         } as CSSProperties
       }
       className={[
-        "pointer-events-auto group/card relative w-full max-w-4xl",
+        "pointer-events-auto group/card relative w-full",
         "flex items-center justify-center",
         "rounded-3xl",
         "border border-white/10",
