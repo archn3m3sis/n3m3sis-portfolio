@@ -2,6 +2,7 @@
 
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { useRef } from "react";
+import { JournalGlowIcon } from "@/components/icons/journal-glow";
 
 export default function HomePage() {
   const cardRef = useRef<HTMLElement>(null);
@@ -38,6 +39,7 @@ export default function HomePage() {
         className={[
           "pointer-events-auto group/card relative w-full max-w-4xl",
           "min-h-[28rem] md:min-h-[32rem] lg:min-h-[36rem]",
+          "flex items-center justify-center",
           "rounded-3xl",
           "border border-white/10",
           "bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))]",
@@ -92,6 +94,8 @@ export default function HomePage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
         />
+
+        <JournalGlowIcon className="relative" size={180} />
       </section>
     </main>
   );
