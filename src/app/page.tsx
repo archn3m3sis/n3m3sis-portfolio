@@ -20,6 +20,7 @@ import { DiagonalBannerIcon } from "@/components/icons/diagonal-banner";
 import { DocumentSearchIcon } from "@/components/icons/document-search";
 import { DoubleArrowIcon } from "@/components/icons/double-arrow";
 import { DownloadCardIcon } from "@/components/icons/download-card";
+import { DumbbellIcon } from "@/components/icons/dumbbell";
 import { EnvelopeHomeIcon } from "@/components/icons/envelope-home";
 import { FigureFlagIcon } from "@/components/icons/figure-flag";
 import { FlagPinIcon } from "@/components/icons/flag-pin";
@@ -123,6 +124,7 @@ const SLOTS: ReactNode[] = [
   <UrgentMailIcon key="urgent-mail" className="h-3/5 w-3/5" />,
   <PowerPointIcon key="powerpoint" className="h-3/5 w-3/5" />,
   <WatchFaceIcon key="watch-face" className="h-3/5 w-3/5" />,
+  <DumbbellIcon key="dumbbell" className="h-3/5 w-3/5" />,
 ];
 
 export default function HomePage() {
