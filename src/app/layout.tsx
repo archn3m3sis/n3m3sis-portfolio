@@ -1,23 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
-import { Cursor } from "@/components/cursor";
-import { EastPointerIcon } from "@/components/icons/east-pointer";
-import { NorthPointerIcon } from "@/components/icons/north-pointer";
-import { SouthPointerIcon } from "@/components/icons/south-pointer";
-import { WestPointerIcon } from "@/components/icons/west-pointer";
-import { PillarField } from "@/components/pillar-field";
-import { TopBar } from "@/components/top-bar";
-import { cn } from "@/lib/utils";
+import { Smooch, Smooch_Sans } from "next/font/google";
 import "./globals.css";
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const smooch = Smooch({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-handle",
+});
+
+const smoochSans = Smooch_Sans({
+  subsets: ["latin"],
+  variable: "--font-header",
+});
 
 export const metadata: Metadata = {
-  title: "archn3m3sis",
+  title: "n3m3sis portfolio",
   description:
-    "Defense-tech engineering, security research, and long-form technical writing.",
+    "Developer portfolio and blog content from Kyle Hurston. Content found within the website includes but isn't limited to defense-tech engineering, security research, and long-form technical writing.",
   metadataBase: new URL("https://www.archn3m3sis.com"),
 };
 
@@ -28,49 +27,20 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        geistSans.variable,
-        geistMono.variable,
-        jetbrainsMono.variable,
-        "font-mono",
-      )}
+      className={`${smooch.variable} ${smoochSans.variable}`}
     >
-      <head>
-        <script src="/audience-preload.js" />
-      </head>
-      <body suppressHydrationWarning>
-        <PillarField />
-        <TopBar />
-        {children}
-        {/* Compass pointers — site-wide directional markers, blended with the
-            background. They sit at the four cardinal edges and use mix-blend
-            so they read as ambient rather than UI. North is offset below the
-            top bar so the bar can sit at the absolute top edge. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 top-0 z-30 flex justify-center pt-32 opacity-50 mix-blend-screen"
+      <body suppressHydrationWarning className="bg-black">
+        <header
+          className="flex items-center gap-12 px-10 text-white"
+          style={{ fontFamily: "var(--font-header)" }}
         >
-          <NorthPointerIcon size={44} />
-        </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pb-2 opacity-50 mix-blend-screen"
-        >
-          <SouthPointerIcon size={44} />
-        </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-y-0 right-0 z-30 flex items-center pr-2 opacity-50 mix-blend-screen"
-        >
-          <EastPointerIcon size={44} />
-        </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-y-0 left-0 z-30 flex items-center pl-2 opacity-50 mix-blend-screen"
-        >
-          <WestPointerIcon size={44} />
-        </div>
-        <Cursor />
+          <div
+            className="text-base"
+            style={{ fontFamily: "var(--font-handle)" }}
+          >
+            @Archn3m3sis | Project: DevSec-Corner
+          </div>
+        </header>
       </body>
     </html>
   );

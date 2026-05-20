@@ -12,26 +12,15 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom magnifier-target cursor takes over from the system cursor.
-   The Cursor component renders a fixed-position overlay with
-   neon crosshairs that grow to encapsulate clickable elements. */
-@media (hover: hover) and (pointer: fine) {
-  html,
-  html *,
-  html *::before,
-  html *::after {
-    cursor: none !important;
-  }
+html,
+body {
+  background: #000;
 }
 
 body {
   min-height: 100%;
-  display: flex;
-  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Body is transparent so the fixed-position pillar field shows through. */
-  background: transparent;
 }
 
 /* NOTE: Do not add unlayered universal padding/margin resets here.
